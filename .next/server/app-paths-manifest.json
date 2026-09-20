@@ -1,0 +1,8 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/page": "app/page.js",
+  "/api/v1/auth/login/route": "app/api/v1/auth/login/route.js",
+  "/api/v1/rag/upload-document/route": "app/api/v1/rag/upload-document/route.js",
+  "/api/v1/competencies/user/[id]/route": "app/api/v1/competencies/user/[id]/route.js",
+  "/api/v1/igot/recommendations/[userId]/route": "app/api/v1/igot/recommendations/[userId]/route.js"
+}

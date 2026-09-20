@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StatSamarth AI | MoSPI Official Statistical System & iGOT Karmayogi FRAC</title>
+  <meta name="description" content="Production-ready Prototype for India's Official Statistical System (MoSPI) integrated with the iGOT Karmayogi FRAC Framework." />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            sand: {
+              50: '#FFFDFB',
+              100: '#FFF4EC', // Background Neutral (60%)
+              200: '#FFE7D6',
+              300: '#FED2B5',
+            },
+            electric: {
+              50: '#EFF6FF',
+              100: '#DBEAFE',
+              500: '#3B82F6', // Electric Sky Blue (Primary UI 30%)
+              600: '#2563EB',
+              700: '#1D4ED8',
+            },
+            slatecool: {
+              50: '#F8FAFC',
+              100: '#F1F5F9',
+              200: '#E2E8F0', // Cool Slate Gray
+              300: '#CBD5E1',
+              400: '#94A3B8',
+            },
+            slatenavy: {
+              800: '#1E293B',
+              900: '#0F172A', // Slate Navy Dark (Accent & Status 10%)
+              950: '#020617',
+            },
+            emeralddeep: {
+              50: '#F0FDF4',
+              100: '#DCFCE7',
+              600: '#0D9488', // Deep Emerald
+              700: '#0F766E',
+            },
+            crimsonsoft: {
+              50: '#FFF1F2',
+              100: '#FFE4E6',
+              600: '#E11D48', // Soft Crimson
+              700: '#BE123C',
+            },
+          },
+          boxShadow: {
+            card: '0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.03)',
+            hover: '0 10px 25px -3px rgba(59, 130, 246, 0.12), 0 4px 6px -2px rgba(15, 23, 42, 0.05)',
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- React 18 & Babel CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Chart.js for Radar Chart -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+  <style>
+    body {
+      background-color: #FFF4EC;
+      color: #0F172A;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #FFF4EC; }
+    ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+    .animate-fadeIn { animation: fadeIn 0.25s ease-out forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body class="bg-sand-100 text-slatenavy-900 min-h-screen">
+  <div id="root"></div>
+
+  <!-- React Application Logic -->
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // --- SEED DATA ENGINE (Self-Contained & API Compatible) ---
+    const INITIAL_USERS = [
+      {
+        id: 'usr_iss_001',
+        name: 'Dr. Rajeshwar Sharma, ISS',
+        email: 'rajeshwar.sharma@mospi.gov.in',
+        role_title: 'Senior Statistical Officer (ISS)',
+        zone: 'North Zone - New Delhi',
+        apar_id: 'APAR-2025-ISS-8842',
+        department: 'National Accounts Division (NAD)'
+      },
+      {
+        id: 'usr_iss_002',
+        name: 'Pooja Varma, ISS',
+        email: 'pooja.varma@mospi.gov.in',
+        role_title: 'Sub-Assistant Director (FOD NSSO)',
+        zone: 'East Zone - Kolkata',
+        apar_id: 'APAR-2025-ISS-9120',
+        department: 'Field Operations Division (FOD), NSSO'
+      },
+      {
+        id: 'usr_iss_003',
+        name: 'Ananthakrishnan K., SSS',
+        email: 'k.ananthakrishnan@mospi.gov.in',
+        role_title: 'Junior Statistical Officer (ESD)',
+        zone: 'South Zone - Bengaluru',
+        apar_id: 'APAR-2025-SSS-4401',
+        department: 'Economic Statistics Division (ESD - CPI/IIP)'
+      },
+      {
+        id: 'usr_iss_004',
+        name: 'Sunita Deshmukh',
+        email: 'sunita.deshmukh@mospi.gov.in',
+        role_title: 'Joint Director (DIID)',
+        zone: 'West Zone - Mumbai',
+        apar_id: 'APAR-2025-ISS-3211',
+        department: 'Data Informatics & Innovation Division'
+      }
+    ];
+
+    const INITIAL_COMPETENCIES = [
+      { id: 'comp_01', name: 'Sampling Design & NSSO Survey Methodologies', category: 'Domain', required: 4, desc: 'Multi-stage stratified sampling, FSU selection, and circular systematic sampling.' },
+      { id: 'comp_02', name: 'CPI Laspeyres Indexation & Price Relatives', category: 'Domain', required: 4, desc: 'Base 2012=100 index formulation, Jevons geometric mean, and overlap pricing.' },
+      { id: 'comp_03', name: 'IIP Base 2011-12 Compilation & Core Weights', category: 'Domain', required: 4, desc: 'Factory sector ASI frame, Eight Core Industries weighting (40.27%), and deflation.' },
+      { id: 'comp_04', name: 'National Accounts Statistics & GVA Estimation', category: 'Domain', required: 5, desc: 'SNA 2008 standards, GVA at basic prices, FISIM distribution, and Supply-Use Tables.' },
+      { id: 'comp_05', name: 'Python & R for Official Microdata Analytics', category: 'Technical', required: 4, desc: 'Automated survey data pipelines, pandas wrangling, and survey multipliers.' },
+      { id: 'comp_06', name: 'Data Quality Audit & Non-Sampling Errors', category: 'Technical', required: 4, desc: 'Outlier detection, item non-response imputations, and variance controls.' },
+      { id: 'comp_07', name: 'CAPI / Modern Digital Survey Instruments', category: 'Technical', required: 3, desc: 'CAPI tablet deployment, GPS geo-tagging, and offline validation scripts.' },
+      { id: 'comp_08', name: 'Statistical Evidence & Policy Formulation', category: 'Behavioral', required: 4, desc: 'Translating complex macro indicators into parliamentary statistical briefs.' },
+      { id: 'comp_09', name: 'Ethical Data Governance & Statistics Act', category: 'Behavioral', required: 5, desc: 'Collection of Statistics Act 2008, confidentiality, and UN Fundamental Principles.' },
+      { id: 'comp_10', name: 'Inter-Departmental Coordination & Mentorship', category: 'Behavioral', required: 3, desc: 'Collaboration with State DES and training field enumerators.' }
+    ];
+
+    const INITIAL_USER_LEVELS = {
+      'usr_iss_001': { comp_01: 4, comp_02: 3, comp_03: 4, comp_04: 5, comp_05: 2, comp_06: 4, comp_07: 2, comp_08: 4, comp_09: 5, comp_10: 3 },
+      'usr_iss_002': { comp_01: 4, comp_02: 2, comp_03: 2, comp_04: 2, comp_05: 3, comp_06: 4, comp_07: 3, comp_08: 3, comp_09: 5, comp_10: 3 },
+      'usr_iss_003': { comp_01: 2, comp_02: 4, comp_03: 3, comp_04: 2, comp_05: 3, comp_06: 3, comp_07: 3, comp_08: 3, comp_09: 4, comp_10: 2 },
+      'usr_iss_004': { comp_01: 3, comp_02: 3, comp_03: 3, comp_04: 4, comp_05: 4, comp_06: 4, comp_07: 3, comp_08: 4, comp_09: 5, comp_10: 3 }
+    };
+
+    const INITIAL_IGOT_COURSES = [
+      { id: 'crs_01', title: 'Python for Official Microdata: NSSO Unit-Level Wrangling', provider: 'NSO Training Division (NSSTA)', comp_id: 'comp_05', target: 4, code: 'IGOT-MOSPI-PY-401', mins: 180, rating: 4.9, match: 96 },
+      { id: 'crs_02', title: 'CAPI Survey Instrumentation & Real-Time Geo-Tagging', provider: 'Field Operations Division & Karmayogi Bharat', comp_id: 'comp_07', target: 3, code: 'IGOT-FOD-CAPI-302', mins: 120, rating: 4.8, match: 94 },
+      { id: 'crs_03', title: 'CPI Concepts, Laspeyres Indexation & Web Portal Scrapers', provider: 'Economic Statistics Division (ESD) & ISTM', comp_id: 'comp_02', target: 4, code: 'IGOT-ESD-CPI-403', mins: 210, rating: 4.9, match: 92 },
+      { id: 'crs_04', title: 'System of National Accounts (SNA 2008) & Supply-Use Tables', provider: 'National Accounts Division & RBI Staff College', comp_id: 'comp_04', target: 5, code: 'IGOT-NAD-SNA-504', mins: 300, rating: 5.0, match: 90 },
+      { id: 'crs_05', title: 'IIP Base 2011-12 Revision, Factory Frame & Core Industries', provider: 'NSSTA Greater Noida', comp_id: 'comp_03', target: 4, code: 'IGOT-ESD-IIP-405', mins: 150, rating: 4.7, match: 88 },
+      { id: 'crs_06', title: 'Collection of Statistics Act 2008 & Data Privacy Governance', provider: 'Institute of Secretariat Training & Management (ISTM)', comp_id: 'comp_09', target: 5, code: 'IGOT-LEG-ACT-506', mins: 90, rating: 4.8, match: 86 }
+    ];
+
+    const INITIAL_MANUALS = [
+      { id: 'mat_01', title: 'NSSO 80th Round Household Survey Operations & Sampling Design Manual', category: 'Sampling & Field Methods', pages: 148, size: '4.2 MB', ns: 'nsso-survey-80' },
+      { id: 'mat_02', title: 'Consumer Price Index (CPI Base 2012=100) Methodology & Compilation Guide', category: 'Price Statistics', pages: 96, size: '3.1 MB', ns: 'cpi-methodology-2012' },
+      { id: 'mat_03', title: 'Index of Industrial Production (IIP Base 2011-12) Compilation Manual', category: 'Industrial Statistics', pages: 72, size: '2.8 MB', ns: 'iip-base-2011-12' },
+      { id: 'mat_04', title: 'National Accounts Statistics: Sources and Methods (Gross Value Added & SUT)', category: 'Macroeconomic Aggregates', pages: 220, size: '5.6 MB', ns: 'nas-sources-methods' }
+    ];
+
+    const SAMPLE_MCQS = [
+      {
+        id: 'q1',
+        question: 'Under official MoSPI CPI Base 2012 methodology, which mathematical formula is mandated for elementary aggregates at the market/village level across quotations?',
+        options: [
+          { key: 'A', text: 'Arithmetic Mean of price ratios (Carli formula)' },
+          { key: 'B', text: 'Geometric Mean of price relatives (Jevons index formula)' },
+          { key: 'C', text: 'Harmonic Mean of relative expenditure shares' },
+          { key: 'D', text: 'Median quotation price weighted by population quantiles' }
+        ],
+        correct: 'B',
+        explanation: 'According to Chapter 4 of the official CPI Compilation Guide, MoSPI adopted the Jevons formula (Geometric Mean) for elementary aggregations to satisfy time-reversal invariance and eliminate upward substitution bias.',
+        citation: {
+          manual: 'Consumer Price Index (CPI Base 2012=100) Compilation Guide',
+          section: 'Chapter 4: Elementary Aggregates and Price Relatives',
+          para: 'Page 34, Paragraph 4.2.1',
+          quote: 'Elementary price relatives are aggregated across selected markets within each state using the Geometric Mean (Jevons formula).'
+        }
+      },
+      {
+        id: 'q2',
+        question: 'In an NSSO rural household survey, if an FSU census village has an estimated population exceeding 1,200 persons, what is the mandatory protocol for Sub-Unit (SU) formation?',
+        options: [
+          { key: 'A', text: 'Discard the FSU and substitute with an adjacent village' },
+          { key: 'B', text: 'Divide into hamlet-groups of equal size and select exactly two (SU 1 purposive, SU 2 random)' },
+          { key: 'C', text: 'Survey all households without sub-division' },
+          { key: 'D', text: 'Only enumerate households located on the village perimeter' }
+        ],
+        correct: 'B',
+        explanation: 'When population exceeds 1,200 in rural FSUs, division into hamlet-groups is strictly enforced. SU 1 is chosen with maximum population and SU 2 is randomly selected by SRSWOR.',
+        citation: {
+          manual: 'NSSO 80th Round Household Survey Operations & Sampling Design Manual',
+          section: 'Chapter 3: Formation of Sub-Units (SUs) and Hamlet-Groups',
+          para: 'Page 31, Section 3.4',
+          quote: 'Two sub-units are selected: SU 1 (with maximum population) and SU 2 (randomly selected from remaining).'
+        }
+      },
+      {
+        id: 'q3',
+        question: 'Which sector carries the single highest individual weighting in India’s Index of Eight Core Industries (Base 2011-12)?',
+        options: [
+          { key: 'A', text: 'Refinery Products (28.04% within Core Index)' },
+          { key: 'B', text: 'Electricity Generation (19.85%)' },
+          { key: 'C', text: 'Steel Production (17.92%)' },
+          { key: 'D', text: 'Coal Mining (10.33%)' }
+        ],
+        correct: 'A',
+        explanation: 'Refinery Products holds the highest weight in the Eight Core Industries (28.04%), which altogether comprise 40.27% of the total IIP.',
+        citation: {
+          manual: 'Index of Industrial Production (IIP Base 2011-12) Compilation Manual',
+          section: 'Chapter 4: Eight Core Industries Index',
+          para: 'Page 28, Section 4.3',
+          quote: 'Refinery Products carries the highest individual weight (28.04% within core industries), followed by Electricity (19.85%).'
+        }
+      }
+    ];
+
+    // --- MAIN APP COMPONENT ---
+    function App() {
+      const [users] = useState(INITIAL_USERS);
+      const [currentUserId, setCurrentUserId] = useState('usr_iss_001');
+      const [userLevels, setUserLevels] = useState(INITIAL_USER_LEVELS);
+      const [activeTab, setActiveTab] = useState('dashboard');
+      const [manuals, setManuals] = useState(INITIAL_MANUALS);
+      const [courses] = useState(INITIAL_IGOT_COURSES);
+      
+      // APAR Status
+      const [aparSynced, setAparSynced] = useState(false);
+      const [aparTxHash, setAparTxHash] = useState('0x8fbc72a19e34c990b7e2129e9841');
+      const [isSyncing, setIsSyncing] = useState(false);
+      const [notification, setNotification] = useState(null);
+
+      // Quiz & Modal States
+      const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
+      const [activeQuiz, setActiveQuiz] = useState(null);
+      const [currentQIdx, setCurrentQIdx] = useState(0);
+      const [userAnswers, setUserAnswers] = useState({});
+      const [quizResults, setQuizResults] = useState(null);
+      const [isAparModalOpen, setIsAparModalOpen] = useState(false);
+
+      // StatBot Chat
+      const [isStatBotOpen, setIsStatBotOpen] = useState(false);
+      const [chatInput, setChatInput] = useState('');
+      const [chatMessages, setChatMessages] = useState([
+        { id: '1', sender: 'bot', text: 'Namaste! I am StatBot AI. Ask me about CPI elementary aggregation, NSSO multi-stage sampling designs, IIP weighting matrices, or official FRAC competencies.', time: 'Now' }
+      ]);
+      const [chatLoading, setChatLoading] = useState(false);
+
+      const currentUser = users.find(u => u.id === currentUserId) || users[0];
+      const currentScores = userLevels[currentUserId] || {};
+
+      // Compute Skill Readiness Index (SRI %)
+      let totalReq = 0;
+      let totalAchieved = 0;
+      let verifiedCount = 0;
+
+      const gapTableData = INITIAL_COMPETENCIES.map(comp => {
+        const cur = currentScores[comp.id] || 1;
+        const req = comp.required;
+        const gap = Math.max(0, req - cur);
+        const isVerified = cur >= req;
+        if (isVerified) verifiedCount++;
+        totalReq += req;
+        totalAchieved += Math.min(cur, req);
+        return {
+          ...comp,
+          current: cur,
+          gap,
+          isVerified,
+          readinessPct: Math.round((Math.min(cur, req) / req) * 100)
+        };
+      });
+
+      const skillReadinessIndex = totalReq > 0 ? Math.round((totalAchieved / totalReq) * 100) : 0;
+      const gapCount = INITIAL_COMPETENCIES.length - verifiedCount;
+
+      // Radar Chart Effect via Chart.js
+      const radarCanvasRef = useRef(null);
+      const chartInstanceRef = useRef(null);
+
+      useEffect(() => {
+        if (activeTab !== 'dashboard' || !radarCanvasRef.current) return;
+
+        if (chartInstanceRef.current) {
+          chartInstanceRef.current.destroy();
+        }
+
+        const ctx = radarCanvasRef.current.getContext('2d');
+        const labels = INITIAL_COMPETENCIES.map(c => c.name.length > 20 ? c.name.substring(0, 18) + '…' : c.name);
+        const currentData = INITIAL_COMPETENCIES.map(c => currentScores[c.id] || 1);
+        const requiredData = INITIAL_COMPETENCIES.map(c => c.required);
+
+        chartInstanceRef.current = new Chart(ctx, {
+          type: 'radar',
+          data: {
+            labels,
+            datasets: [
+              {
+                label: 'Current Assessed Level',
+                data: currentData,
+                backgroundColor: 'rgba(59, 130, 246, 0.35)',
+                borderColor: '#3B82F6',
+                borderWidth: 2.5,
+                pointBackgroundColor: '#3B82F6',
+              },
+              {
+                label: 'Required FRAC Benchmark',
+                data: requiredData,
+                backgroundColor: 'rgba(15, 23, 42, 0.08)',
+                borderColor: '#0F172A',
+                borderWidth: 1.5,
+                borderDash: [4, 4],
+                pointBackgroundColor: '#0F172A',
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              r: {
+                min: 0,
+                max: 5,
+                ticks: { stepSize: 1, color: '#64748B', backdropColor: 'transparent' },
+                grid: { color: '#E2E8F0' },
+                pointLabels: { color: '#0F172A', font: { size: 10, weight: '600' } }
+              }
+            },
+            plugins: {
+              legend: { position: 'top', labels: { color: '#0F172A', font: { size: 11, weight: 'bold' } } }
+            }
+          }
+        });
+
+        return () => {
+          if (chartInstanceRef.current) chartInstanceRef.current.destroy();
+        };
+      }, [activeTab, currentUserId, userLevels]);
+
+      // Handle APAR Passbook Sync
+      const handleSyncApar = () => {
+        setIsSyncing(true);
+        setTimeout(() => {
+          setAparSynced(true);
+          const newHash = '0x' + Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+          setAparTxHash(newHash);
+          setIsSyncing(false);
+          setNotification('Successfully synchronized verified FRAC skills to iGOT Karmayogi Passbook & e-APAR Record!');
+          confetti({ particleCount: 60, spread: 70, origin: { y: 0.3 } });
+          setTimeout(() => setNotification(null), 6000);
+        }, 1200);
+      };
+
+      // Handle Quiz Submission
+      const handleSubmitQuiz = () => {
+        let correct = 0;
+        SAMPLE_MCQS.forEach(q => {
+          if (userAnswers[q.id] === q.correct) correct++;
+        });
+        const score = Math.round((correct / SAMPLE_MCQS.length) * 100);
+        const passed = score >= 70;
+
+        // Upgrade Competency if passed
+        if (passed) {
+          const compToUpgrade = 'comp_02'; // CPI Laspeyres
+          setUserLevels(prev => {
+            const userScores = { ...prev[currentUserId] };
+            userScores[compToUpgrade] = Math.min(5, (userScores[compToUpgrade] || 1) + 1);
+            return { ...prev, [currentUserId]: userScores };
+          });
+          setAparSynced(false); // Flag pending sync
+          confetti({ particleCount: 90, spread: 80, origin: { y: 0.5 } });
+        }
+
+        setQuizResults({
+          score,
+          passed,
+          correct,
+          total: SAMPLE_MCQS.length
+        });
+      };
+
+      // Handle StatBot Query
+      const handleSendChat = (promptText) => {
+        const text = promptText || chatInput;
+        if (!text.trim()) return;
+
+        const userMsg = { id: Date.now().toString(), sender: 'user', text, time: 'Now' };
+        setChatMessages(prev => [...prev, userMsg]);
+        if (!promptText) setChatInput('');
+        setChatLoading(true);
+
+        setTimeout(() => {
+          let botText = 'MoSPI guidelines require following standardized survey sampling and base-year methodologies.';
+          let citation = 'MoSPI Official Methodology Manual';
+
+          const lower = text.toLowerCase();
+          if (lower.includes('cpi') || lower.includes('laspeyres') || lower.includes('jevons')) {
+            botText = `### MoSPI Consumer Price Index (Base 2012=100) Methodology\n\n1. **Elementary Level**: MoSPI uses the **Jevons Index (Geometric Mean)**:\n   R_i = (∏ P_t,j / P_0,j)^(1/m)\n   This eliminates the upward substitution bias of the Carli index.\n2. **Aggregated Level**: Compiled via Modified Laspeyres using expenditure weights from the NSS 68th Round Consumer Expenditure Survey (CES).\n3. **Quality Adjustment**: Missing quotations mandate overlap pricing to prevent spurious inflation.`;
+            citation = 'CPI Base 2012=100 Compilation Guide, Chapter 4, Page 34';
+          } else if (lower.includes('nsso') || lower.includes('fsu') || lower.includes('sampling')) {
+            botText = `### NSSO Multi-Stage Stratified Sampling Frame\n\n- **Rural First Stage Units (FSUs)**: Census Revenue Villages (Panchayat wards in Kerala).\n- **Urban FSUs**: Urban Frame Survey (UFS) blocks (100–150 households).\n- **Hamlet-Group Formation**: Mandatory when population ≥ 1,200 (rural) or ≥ 1,400 (urban). Exactly 2 sub-units selected.\n- **Households (USUs)**: Selected via circular systematic sampling with equal probability.`;
+            citation = 'NSSO 80th Round Survey Manual, Chapter 2, Page 19';
+          } else if (lower.includes('iip') || lower.includes('core')) {
+            botText = `### Index of Industrial Production (IIP Base 2011-12)\n\n- Sectoral Weights: Manufacturing (77.63%), Mining (14.37%), Electricity (8.00%).\n- **Eight Core Industries**: Constitute **40.27%** of total IIP. Refinery Products has the largest core weight (28.04%), followed by Electricity (19.85%) and Steel (17.92%).`;
+            citation = 'IIP Compilation Manual, Chapter 4, Page 28';
+          }
+
+          const botMsg = {
+            id: (Date.now() + 1).toString(),
+            sender: 'bot',
+            text: botText,
+            citation,
+            time: 'Now'
+          };
+          setChatMessages(prev => [...prev, botMsg]);
+          setChatLoading(false);
+        }, 600);
+      };
+
+      return (
+        <div className="min-h-screen flex flex-col bg-sand-100 font-sans">
+          
+          {/* 1. TOP HEADER & NAVBAR */}
+          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slatecool-200 shadow-sm">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+              
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-slatenavy-900 flex items-center justify-center text-white font-bold text-xl shadow-md ring-2 ring-electric-500/20">
+                  🏛️
+                </div>
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <span className="font-extrabold text-lg text-slatenavy-900 tracking-tight">
+                      StatSamarth <span className="text-electric-500">AI</span>
+                    </span>
+                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300">
+                      MoSPI Official
+                    </span>
+                    <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-electric-100 text-electric-700">
+                      Prototype
+                    </span>
+                  </div>
+                  <p className="text-xs text-slatenavy-900/60 font-medium">
+                    Integrated with iGOT Karmayogi FRAC Framework
+                  </p>
+                </div>
+              </div>
+
+              {/* Officer Switcher & APAR Badge */}
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => setIsAparModalOpen(true)}
+                  className={`hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                    aparSynced
+                      ? 'bg-emeralddeep-50 text-emeralddeep-700 border-emeralddeep-200 hover:bg-emeralddeep-100'
+                      : 'bg-crimsonsoft-50 text-crimsonsoft-600 border-crimsonsoft-200 hover:bg-crimsonsoft-100'
+                  }`}
+                >
+                  <span className={`w-2 h-2 rounded-full ${aparSynced ? 'bg-emeralddeep-600 animate-pulse' : 'bg-crimsonsoft-600'}`}></span>
+                  <span className="font-mono">{currentUser.apar_id}</span>
+                  <span>•</span>
+                  <span>{aparSynced ? 'iGOT Synced' : `${gapCount} Gaps Pending`}</span>
+                </button>
+
+                <div className="flex items-center space-x-2 bg-sand-100 px-3 py-1.5 rounded-lg border border-slatecool-200">
+                  <span className="text-xs font-bold text-electric-500">👤</span>
+                  <div>
+                    <select
+                      value={currentUserId}
+                      onChange={(e) => {
+                        setCurrentUserId(e.target.value);
+                        setActiveQuiz(null);
+                      }}
+                      className="bg-transparent text-xs font-bold text-slatenavy-900 focus:outline-none cursor-pointer"
+                    >
+                      {users.map(u => (
+                        <option key={u.id} value={u.id}>{u.name} ({u.role_title.split('(')[0].trim()})</option>
+                      ))}
+                    </select>
+                    <div className="text-[10px] text-slate-500 font-medium">{currentUser.zone}</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </header>
+
+          {/* Sync Alert Banner */}
+          {notification && (
+            <div className="bg-emeralddeep-600 text-white px-4 py-2 text-xs font-semibold text-center flex items-center justify-center space-x-2 animate-fadeIn">
+              <span>✓ {notification}</span>
+            </div>
+          )}
+
+          {/* 2. BODY WITH DARK NAVY SIDEBAR & DYNAMIC CONTENT */}
+          <div className="flex-1 flex max-w-7xl w-full mx-auto">
+            
+            {/* Dark Sidebar Navigation */}
+            <aside className="w-64 bg-slatenavy-900 text-slate-200 min-h-[calc(100vh-4rem)] flex flex-col justify-between p-4 shadow-xl border-r border-slatenavy-800">
+              <div className="space-y-4">
+                
+                <div className="px-3 py-2 bg-slatenavy-800/80 rounded-lg border border-slatenavy-700 text-xs">
+                  <div className="font-bold text-electric-400 uppercase tracking-wider">Karmayogi FRAC Engine</div>
+                  <div className="text-[11px] text-slate-400 mt-0.5">Statistical Cadre Capacity Matrix</div>
+                </div>
+
+                <nav className="space-y-1.5">
+                  {[
+                    { id: 'dashboard', label: 'FRAC Radar & Gaps', sub: 'Module A: Skill Readiness', icon: '📊', badge: gapCount > 0 ? `${gapCount} Gaps` : 'Verified', badgeColor: gapCount > 0 ? 'bg-crimsonsoft-600 text-white' : 'bg-emeralddeep-600 text-white' },
+                    { id: 'assessment', label: 'AI RAG Assessment', sub: 'Module B: MCQ Generator', icon: '📝', badge: 'Bloom 3.0', badgeColor: 'bg-electric-500/20 text-electric-400' },
+                    { id: 'recommender', label: 'iGOT Recommender', sub: 'Module C: Karmayogi Courses', icon: '🎓', badge: `${courses.length} Courses`, badgeColor: 'bg-emeralddeep-500/20 text-emeralddeep-400' },
+                    { id: 'analytics', label: 'Zonal Capacity', sub: 'Module D: Regional Heatmap', icon: '🗺️', badge: '5 Zones', badgeColor: 'bg-slate-700 text-slate-300' },
+                    { id: 'manuals', label: 'Official Manuals', sub: 'Knowledge Base & Vectors', icon: '📚', badge: `${manuals.length} PDFs`, badgeColor: 'bg-slate-700 text-slate-300' }
+                  ].map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => {
+                        setActiveTab(tab.id);
+                        if (tab.id !== 'assessment') setActiveQuiz(null);
+                      }}
+                      className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-left transition-all ${
+                        activeTab === tab.id
+                          ? 'bg-electric-500 text-white shadow-md font-semibold'
+                          : 'text-slate-300 hover:bg-slatenavy-800 hover:text-white'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <span className="text-lg">{tab.icon}</span>
+                        <div>
+                          <div className="text-sm font-medium leading-none mb-1">{tab.label}</div>
+                          <div className={`text-[11px] leading-none ${activeTab === tab.id ? 'text-white/80' : 'text-slate-400'}`}>{tab.sub}</div>
+                        </div>
+                      </div>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${tab.badgeColor}`}>{tab.badge}</span>
+                    </button>
+                  ))}
+                </nav>
+
+              </div>
+
+              <div className="p-3 bg-slatenavy-800/50 rounded-xl border border-slatenavy-800 text-xs text-slate-400">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-semibold text-slate-200">Framework V2.4</span>
+                  <span className="w-2 h-2 rounded-full bg-emeralddeep-500"></span>
+                </div>
+                <p className="text-[11px] text-slate-400">MoSPI ISS Cadre Capacity Building Guidelines & Karmayogi Bharat APAR specs.</p>
+              </div>
+            </aside>
+
+            {/* Main Content Workspace */}
+            <main className="flex-1 p-6 sm:p-8 space-y-6 overflow-y-auto">
+              
+              {/* Officer Role Profile Banner */}
+              <div className="bg-white rounded-xl p-6 border border-slatecool-200 shadow-card flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="flex items-center space-x-4">
+                  <div className="w-14 h-14 rounded-2xl bg-slatenavy-900 text-white flex items-center justify-center font-extrabold text-xl shadow-md border-2 border-electric-500/30">
+                    {currentUser.name[0]}{currentUser.name.split(' ')[1]?.[0] || 'S'}
+                  </div>
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h1 className="text-lg font-bold text-slatenavy-900">{currentUser.name}</h1>
+                      <span className="text-xs px-2.5 py-0.5 rounded-full bg-electric-50 text-electric-600 font-semibold border border-electric-200">
+                        {currentUser.role_title}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 mt-1">
+                      <span>🏢 {currentUser.department}</span>
+                      <span>•</span>
+                      <span>{currentUser.zone}</span>
+                      <span>•</span>
+                      <span className="font-mono font-semibold text-slatenavy-900">APAR ID: {currentUser.apar_id}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3 w-full md:w-auto">
+                  <button
+                    onClick={handleSyncApar}
+                    disabled={isSyncing}
+                    className="flex-1 md:flex-none px-4 py-2 rounded-xl bg-electric-500 text-white text-xs font-bold hover:bg-electric-600 transition-colors shadow-sm flex items-center justify-center space-x-1.5"
+                  >
+                    <span>{isSyncing ? 'Pushing to iGOT...' : 'Sync APAR Passbook'}</span>
+                  </button>
+                  <button
+                    onClick={() => setIsAparModalOpen(true)}
+                    className="px-3.5 py-2 rounded-xl bg-sand-100 text-slatenavy-900 hover:bg-sand-200 text-xs font-semibold border border-slatecool-200"
+                  >
+                    View Dossier
+                  </button>
+                </div>
+              </div>
+
+              {/* MODULE A: FRAC COMPETENCY GAP & RADAR DASHBOARD */}
+              {activeTab === 'dashboard' && (
+                <div className="space-y-6 animate-fadeIn">
+                  
+                  {/* Top Analytics Row: Radar Chart + Skill Readiness Gauge */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    
+                    {/* Visual Radar Chart (7 cols) */}
+                    <div className="lg:col-span-7 bg-white rounded-xl p-6 border border-slatecool-200 shadow-card flex flex-col justify-between">
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <h2 className="text-base font-bold text-slatenavy-900">FRAC Skill Radar Matrix</h2>
+                          <p className="text-xs text-slate-500">Comparing Current Assessed Level vs Required Official MoSPI Level</p>
+                        </div>
+                        <span className="text-xs px-2 py-0.5 rounded bg-sand-100 text-slate-700 font-semibold border border-slatecool-200">
+                          Domain • Technical • Behavioral
+                        </span>
+                      </div>
+
+                      <div className="h-[360px] relative w-full flex items-center justify-center">
+                        <canvas ref={radarCanvasRef}></canvas>
+                      </div>
+
+                      <div className="pt-3 border-t border-slatecool-200 flex items-center justify-between text-[11px] text-slate-500">
+                        <div className="flex items-center space-x-4">
+                          <span className="flex items-center space-x-1.5">
+                            <span className="w-3 h-3 rounded-full bg-electric-500"></span>
+                            <span className="font-semibold text-slatenavy-900">Current Level (1-5)</span>
+                          </span>
+                          <span className="flex items-center space-x-1.5">
+                            <span className="w-3 h-3 rounded-full bg-slatenavy-900"></span>
+                            <span className="font-semibold text-slatenavy-900">Required Benchmark</span>
+                          </span>
+                        </div>
+                        <span className="text-electric-600 font-bold">10 Key Competencies Mapped</span>
+                      </div>
+                    </div>
+
+                    {/* Skill Readiness Index Gauge (5 cols) */}
+                    <div className="lg:col-span-5 bg-white rounded-xl p-6 border border-slatecool-200 shadow-card flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center justify-between mb-4">
+                          <div>
+                            <h3 className="text-base font-bold text-slatenavy-900">Skill Readiness Index (SRI)</h3>
+                            <p className="text-xs text-slate-500">Automated compliance score across official role requirements</p>
+                          </div>
+                          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${
+                            skillReadinessIndex >= 80 ? 'bg-emeralddeep-50 text-emeralddeep-700 border-emeralddeep-200' : 'bg-electric-50 text-electric-600 border-electric-200'
+                          }`}>
+                            {skillReadinessIndex >= 80 ? 'Exemplary' : 'Proficient'}
+                          </span>
+                        </div>
+
+                        {/* Circular Progress Gauge */}
+                        <div className="flex items-center justify-center my-6">
+                          <div className="relative w-40 h-40 flex items-center justify-center">
+                            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                              <circle cx="50" cy="50" r="45" fill="transparent" stroke="#E2E8F0" strokeWidth="8"></circle>
+                              <circle cx="50" cy="50" r="45" fill="transparent" stroke={skillReadinessIndex >= 75 ? '#0D9488' : '#3B82F6'} strokeWidth="8"
+                                strokeDasharray="282.7"
+                                strokeDashoffset={282.7 - (skillReadinessIndex / 100) * 282.7}
+                                strokeLinecap="round"
+                                className="transition-all duration-1000 ease-out"
+                              ></circle>
+                            </svg>
+                            <div className="absolute flex flex-col items-center justify-center">
+                              <span className="text-3xl font-extrabold text-slatenavy-900">{skillReadinessIndex}%</span>
+                              <span className="text-[10px] uppercase font-bold text-slate-400">Readiness</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Metrics Grid */}
+                        <div className="grid grid-cols-2 gap-3 mb-4">
+                          <div className="p-3 bg-sand-50 rounded-lg border border-slatecool-200">
+                            <div className="text-xs font-bold text-emeralddeep-600">✓ Verified</div>
+                            <div className="text-xl font-extrabold text-slatenavy-900">{verifiedCount} <span className="text-xs font-normal text-slate-500">/ 10</span></div>
+                            <div className="text-[11px] text-slate-500">Benchmarks Achieved</div>
+                          </div>
+                          <div className="p-3 bg-sand-50 rounded-lg border border-slatecool-200">
+                            <div className="text-xs font-bold text-crimsonsoft-600">⚠️ Skill Gaps</div>
+                            <div className="text-xl font-extrabold text-crimsonsoft-600">{gapCount} <span className="text-xs font-normal text-slate-500">competencies</span></div>
+                            <div className="text-[11px] text-slate-500">Below Target Level</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="pt-3 border-t border-slatecool-200 flex items-center justify-between text-xs">
+                        <span className="text-slate-500">Promotion Threshold: 80% SRI</span>
+                        <button
+                          onClick={handleSyncApar}
+                          className="px-3 py-1.5 rounded-lg bg-slatenavy-900 text-white font-semibold hover:bg-slatenavy-800 text-xs"
+                        >
+                          Sync to Passbook
+                        </button>
+                      </div>
+                    </div>
+
+                  </div>
+
+                  {/* Interactive FRAC Gap Table */}
+                  <div className="bg-white rounded-xl border border-slatecool-200 shadow-card overflow-hidden">
+                    <div className="p-4 border-b border-slatecool-200 bg-sand-50/60 flex items-center justify-between">
+                      <div>
+                        <h3 className="text-base font-bold text-slatenavy-900">FRAC Role Competency Audit Matrix</h3>
+                        <p className="text-xs text-slate-500">Current assessed level vs official MoSPI benchmark</p>
+                      </div>
+                      <span className="text-xs px-2.5 py-1 rounded bg-sand-200 text-slatenavy-900 font-semibold">
+                        {gapTableData.length} Competencies
+                      </span>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-slatecool-100 text-slatenavy-900 font-bold border-b border-slatecool-200 uppercase tracking-wider text-[10px]">
+                          <tr>
+                            <th className="py-3 px-4">Competency Title</th>
+                            <th className="py-3 px-4">Category</th>
+                            <th className="py-3 px-4 text-center">Assessed Level</th>
+                            <th className="py-3 px-4 text-center">Required Level</th>
+                            <th className="py-3 px-4 text-center">Readiness %</th>
+                            <th className="py-3 px-4 text-center">Status</th>
+                            <th className="py-3 px-4 text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slatecool-200">
+                          {gapTableData.map(item => (
+                            <tr key={item.id} className="hover:bg-sand-50/70 transition-colors">
+                              <td className="py-3 px-4">
+                                <div className="font-bold text-sm text-slatenavy-900">{item.name}</div>
+                                <div className="text-[11px] text-slate-500">{item.desc}</div>
+                              </td>
+                              <td className="py-3 px-4">
+                                <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold border ${
+                                  item.category === 'Domain' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                  item.category === 'Technical' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                                  'bg-amber-50 text-amber-800 border-amber-200'
+                                }`}>
+                                  {item.category}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4 text-center">
+                                <span className="font-bold text-slatenavy-900 bg-sand-100 px-2 py-0.5 rounded border border-slatecool-200">
+                                  Level {item.current}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4 text-center">
+                                <span className="font-bold text-slatenavy-900">
+                                  Level {item.required}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4 text-center">
+                                <div className="w-20 mx-auto">
+                                  <div className="font-bold text-[10px] mb-0.5">{item.readinessPct}%</div>
+                                  <div className="h-1.5 w-full bg-slatecool-200 rounded-full overflow-hidden">
+                                    <div className={`h-full ${item.isVerified ? 'bg-emeralddeep-600' : 'bg-electric-500'}`} style={{ width: `${item.readinessPct}%` }}></div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="py-3 px-4 text-center">
+                                {item.isVerified ? (
+                                  <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emeralddeep-50 text-emeralddeep-700 border border-emeralddeep-200">
+                                    <span>✓ Verified</span>
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-crimsonsoft-50 text-crimsonsoft-600 border border-crimsonsoft-200">
+                                    <span>⚠️ Gap (-{item.gap} Lvl)</span>
+                                  </span>
+                                )}
+                              </td>
+                              <td className="py-3 px-4 text-right">
+                                {!item.isVerified ? (
+                                  <button
+                                    onClick={() => {
+                                      setActiveQuiz(SAMPLE_MCQS);
+                                      setCurrentQIdx(0);
+                                      setUserAnswers({});
+                                      setQuizResults(null);
+                                      setActiveTab('assessment');
+                                    }}
+                                    className="px-3 py-1.5 rounded-lg bg-electric-500 text-white font-semibold hover:bg-electric-600 transition-colors text-xs shadow-sm"
+                                  >
+                                    Bridge Gap
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={() => {
+                                      setActiveQuiz(SAMPLE_MCQS);
+                                      setCurrentQIdx(0);
+                                      setUserAnswers({});
+                                      setQuizResults(null);
+                                      setActiveTab('assessment');
+                                    }}
+                                    className="px-2.5 py-1.5 rounded-lg bg-slatecool-100 text-slatenavy-900 font-semibold hover:bg-slatecool-200 text-xs"
+                                  >
+                                    Re-assess
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                </div>
+              )}
+
+              {/* MODULE B: AI ASSESSMENT & MCQ GENERATOR */}
+              {activeTab === 'assessment' && (
+                <div className="space-y-6 animate-fadeIn">
+                  
+                  {activeQuiz ? (
+                    <div className="max-w-4xl mx-auto space-y-6">
+                      
+                      {/* Top Bar */}
+                      <div className="bg-white rounded-xl border border-slatecool-200 p-4 shadow-card flex items-center justify-between">
+                        <div>
+                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-electric-100 text-electric-700">
+                            Bloom 3.0: Apply & Analyze
+                          </span>
+                          <h2 className="text-base font-bold text-slatenavy-900 mt-1">
+                            MoSPI CPI & Sampling Design FRAC Assessment
+                          </h2>
+                        </div>
+                        <button
+                          onClick={() => setActiveQuiz(null)}
+                          className="text-xs font-semibold text-slate-500 hover:text-slatenavy-900"
+                        >
+                          Exit Assessment
+                        </button>
+                      </div>
+
+                      {!quizResults ? (
+                        /* Question Runner */
+                        <div className="bg-white rounded-xl border border-slatecool-200 p-6 shadow-card space-y-6">
+                          <div className="flex items-center justify-between border-b border-slatecool-200 pb-3">
+                            <span className="text-xs font-bold text-electric-600">Question {currentQIdx + 1} of {activeQuiz.length}</span>
+                            <span className="text-xs text-slate-500 font-mono">Pass Threshold: 70%</span>
+                          </div>
+
+                          <div className="text-base font-bold text-slatenavy-900 leading-relaxed">
+                            {activeQuiz[currentQIdx].question}
+                          </div>
+
+                          <div className="space-y-3">
+                            {activeQuiz[currentQIdx].options.map(opt => {
+                              const isSelected = userAnswers[activeQuiz[currentQIdx].id] === opt.key;
+                              return (
+                                <div
+                                  key={opt.key}
+                                  onClick={() => setUserAnswers(prev => ({ ...prev, [activeQuiz[currentQIdx].id]: opt.key }))}
+                                  className={`p-3.5 rounded-xl border-2 cursor-pointer transition-all flex items-start space-x-3 ${
+                                    isSelected
+                                      ? 'border-electric-500 bg-electric-50 text-slatenavy-900 font-semibold'
+                                      : 'border-slatecool-200 hover:border-slatecool-300 bg-sand-50/20'
+                                  }`}
+                                >
+                                  <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
+                                    isSelected ? 'bg-electric-500 text-white' : 'bg-slatecool-200 text-slate-700'
+                                  }`}>
+                                    {opt.key}
+                                  </div>
+                                  <div className="text-sm font-medium pt-0.5">{opt.text}</div>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          <div className="flex items-center justify-between pt-4 border-t border-slatecool-200">
+                            <button
+                              onClick={() => setCurrentQIdx(p => Math.max(0, p - 1))}
+                              disabled={currentQIdx === 0}
+                              className="px-3 py-2 rounded-lg text-xs font-bold text-slate-600 hover:bg-slatecool-100 disabled:opacity-30"
+                            >
+                              Previous
+                            </button>
+
+                            {currentQIdx < activeQuiz.length - 1 ? (
+                              <button
+                                onClick={() => setCurrentQIdx(p => Math.min(activeQuiz.length - 1, p + 1))}
+                                className="px-4 py-2 rounded-lg bg-slatenavy-900 text-white text-xs font-bold hover:bg-slatenavy-800"
+                              >
+                                Next Question
+                              </button>
+                            ) : (
+                              <button
+                                onClick={handleSubmitQuiz}
+                                className="px-5 py-2.5 rounded-xl bg-electric-500 text-white text-xs font-bold hover:bg-electric-600 shadow-hover"
+                              >
+                                Submit Assessment
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        /* Results Screen with Citations */
+                        <div className="space-y-6">
+                          
+                          <div className={`p-6 rounded-2xl border shadow-card flex items-center justify-between ${
+                            quizResults.passed ? 'bg-emeralddeep-50 border-emeralddeep-200' : 'bg-crimsonsoft-50 border-crimsonsoft-200'
+                          }`}>
+                            <div>
+                              <div className="flex items-center space-x-2">
+                                <h3 className="text-xl font-extrabold text-slatenavy-900">
+                                  {quizResults.passed ? 'Assessment Passed! 🎉' : 'Assessment Not Met'}
+                                </h3>
+                                <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
+                                  quizResults.passed ? 'bg-emeralddeep-600 text-white' : 'bg-crimsonsoft-600 text-white'
+                                }`}>
+                                  Score: {quizResults.score}%
+                                </span>
+                              </div>
+                              <p className="text-xs text-slatenavy-900/70 mt-1">
+                                {quizResults.passed
+                                  ? 'Official FRAC benchmark achieved. Competency level successfully upgraded in your profile!'
+                                  : 'Score below 70% threshold. Review official source manual citations below.'}
+                              </p>
+                            </div>
+
+                            <button
+                              onClick={() => {
+                                setActiveQuiz(null);
+                                setActiveTab('dashboard');
+                              }}
+                              className="px-4 py-2 rounded-lg bg-slatenavy-900 text-white text-xs font-semibold"
+                            >
+                              Return to Dashboard
+                            </button>
+                          </div>
+
+                          {/* Question Review Cards */}
+                          <div className="space-y-4">
+                            {activeQuiz.map((q, idx) => {
+                              const isCorrect = userAnswers[q.id] === q.correct;
+                              return (
+                                <div key={q.id} className="bg-white rounded-xl border border-slatecool-200 p-5 shadow-card space-y-3">
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-bold text-xs text-slatenavy-900">Question {idx + 1}</span>
+                                    <span className={`text-xs font-bold px-2 py-0.5 rounded ${
+                                      isCorrect ? 'bg-emeralddeep-50 text-emeralddeep-700' : 'bg-crimsonsoft-50 text-crimsonsoft-600'
+                                    }`}>
+                                      {isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                                    </span>
+                                  </div>
+
+                                  <div className="text-sm font-semibold text-slatenavy-900">{q.question}</div>
+
+                                  <div className="grid grid-cols-2 gap-2 text-xs">
+                                    <div className="p-2 rounded bg-sand-50 border border-slatecool-200">
+                                      Your Answer: <strong>Option {userAnswers[q.id] || 'None'}</strong>
+                                    </div>
+                                    <div className="p-2 rounded bg-emeralddeep-50 text-emeralddeep-800 border border-emeralddeep-200">
+                                      Official Key: <strong>Option {q.correct}</strong>
+                                    </div>
+                                  </div>
+
+                                  <div className="text-xs text-slate-700 pt-2 border-t border-slatecool-100">
+                                    <strong>Explanation: </strong> {q.explanation}
+                                  </div>
+
+                                  <div className="p-3 bg-sand-50 rounded-lg border border-sand-200 text-[11px] text-slatenavy-900">
+                                    <div className="font-bold text-electric-700 mb-0.5">📖 Source Manual Citation:</div>
+                                    <div>{q.citation.manual}</div>
+                                    <div className="text-slate-500">{q.citation.section} • {q.citation.para}</div>
+                                    <div className="italic text-slate-600 mt-1 bg-white p-1.5 rounded border border-slatecool-200">
+                                      "{q.citation.quote}"
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                        </div>
+                      )}
+
+                    </div>
+                  ) : (
+                    /* Assessment Launcher */
+                    <div className="bg-white rounded-xl p-8 border border-slatecool-200 shadow-card text-center space-y-4">
+                      <div className="w-12 h-12 rounded-2xl bg-electric-50 text-electric-600 flex items-center justify-center text-2xl mx-auto">
+                        📝
+                      </div>
+                      <h2 className="text-lg font-bold text-slatenavy-900">AI Assessment & RAG MCQ Generator</h2>
+                      <p className="text-xs text-slate-500 max-w-md mx-auto">
+                        Synthesize questions across Bloom's Taxonomy (Remember, Apply, Analyze) directly from MoSPI official survey manuals and statistical guidelines.
+                      </p>
+                      <button
+                        onClick={() => {
+                          setActiveQuiz(SAMPLE_MCQS);
+                          setCurrentQIdx(0);
+                          setUserAnswers({});
+                          setQuizResults(null);
+                        }}
+                        className="px-5 py-2.5 rounded-xl bg-electric-500 text-white text-xs font-bold hover:bg-electric-600 shadow-hover"
+                      >
+                        Launch 3-Question Assessment Sprint
+                      </button>
+                    </div>
+                  )}
+
+                </div>
+              )}
+
+              {/* MODULE C: iGOT KARMAYOGI RECOMMENDER ENGINE */}
+              {activeTab === 'recommender' && (
+                <div className="space-y-6 animate-fadeIn">
+                  <div className="bg-white rounded-xl p-6 border border-slatecool-200 shadow-card flex items-center justify-between">
+                    <div>
+                      <div className="text-xs font-bold text-electric-600 uppercase tracking-wider">Karmayogi Bharat Course Recommendation Engine</div>
+                      <h2 className="text-base font-bold text-slatenavy-900">Semantic Skill Gap Matching ({courses.length} Courses Found)</h2>
+                      <p className="text-xs text-slate-500">Matched against your missing FRAC competencies and official cadre targets</p>
+                    </div>
+                    <button
+                      onClick={handleSyncApar}
+                      className="px-4 py-2 rounded-xl bg-slatenavy-900 text-white text-xs font-bold hover:bg-slatenavy-800"
+                    >
+                      Sync Passbook to APAR
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {courses.map(course => (
+                      <div key={course.id} className="bg-white rounded-xl border border-slatecool-200 p-5 shadow-card flex flex-col justify-between hover:border-electric-500 transition-all group">
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-electric-50 text-electric-600 border border-electric-200">
+                              ★ {course.match}% Semantic Match
+                            </span>
+                            <span className="text-[11px] font-mono text-slate-500 bg-sand-100 px-2 py-0.5 rounded border border-slatecool-200">
+                              {course.code}
+                            </span>
+                          </div>
+                          <h4 className="text-sm font-bold text-slatenavy-900 group-hover:text-electric-600 transition-colors leading-snug">
+                            {course.title}
+                          </h4>
+                          <p className="text-xs text-slate-500 mt-1">Offered by: <strong>{course.provider}</strong></p>
+                        </div>
+
+                        <div className="mt-4 pt-3 border-t border-slatecool-200">
+                          <div className="flex items-center justify-between text-xs text-slate-500 mb-3">
+                            <span>⏱️ {course.mins} mins</span>
+                            <span>⭐ {course.rating}</span>
+                            <span className="font-semibold text-slatenavy-900">Target: Level {course.target}</span>
+                          </div>
+                          <button
+                            onClick={() => alert(`Enrolled in ${course.title} on iGOT Karmayogi Bharat!`)}
+                            className="w-full py-2 rounded-lg bg-electric-500 text-white text-xs font-bold hover:bg-electric-600 transition-colors shadow-sm"
+                          >
+                            Enroll on iGOT
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* MODULE D: ADMIN & ZONAL CAPACITY ANALYTICS */}
+              {activeTab === 'analytics' && (
+                <div className="space-y-6 animate-fadeIn">
+                  <div className="bg-white rounded-xl p-5 border border-slatecool-200 shadow-card flex items-center justify-between">
+                    <div>
+                      <h2 className="text-base font-bold text-slatenavy-900">MoSPI Training Directorate: Zonal Capacity Analytics</h2>
+                      <p className="text-xs text-slate-500">National overview across North, East, South, West, and Central headquarters</p>
+                    </div>
+                    <button
+                      onClick={() => setIsAparModalOpen(true)}
+                      className="px-4 py-2 rounded-xl bg-slatenavy-900 text-white text-xs font-bold hover:bg-slatenavy-800"
+                    >
+                      Export APAR Dossier
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {[
+                      { zone: 'North Zone - New Delhi', hq: 'Sardar Patel Bhawan', count: 420, readiness: 78.4, topGap: 'Python & R for Microdata', sync: 92.5 },
+                      { zone: 'East Zone - Kolkata', hq: 'Mahalanobis Bhavan', count: 380, readiness: 71.2, topGap: 'CPI Laspeyres Indexation', sync: 84.0 },
+                      { zone: 'South Zone - Bengaluru', hq: 'Kendriya Sadan', count: 340, readiness: 82.6, topGap: 'SNA 2008 & SUT Tables', sync: 95.8 },
+                      { zone: 'West Zone - Mumbai', hq: 'CGO Complex Belapur', count: 310, readiness: 76.0, topGap: 'CAPI Digital Instruments', sync: 88.2 },
+                      { zone: 'Central Zone - Bhopal', hq: 'Paryavaran Parisar', count: 220, readiness: 68.5, topGap: 'Python & R for Microdata', sync: 79.0 }
+                    ].map(z => (
+                      <div key={z.zone} className="bg-white rounded-xl p-4 border border-slatecool-200 shadow-card">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h4 className="font-bold text-sm text-slatenavy-900">{z.zone}</h4>
+                            <div className="text-[11px] text-slate-500">HQ: {z.hq}</div>
+                          </div>
+                          <span className="text-xs font-mono font-bold bg-sand-100 px-2 py-0.5 rounded border border-slatecool-200">
+                            {z.count} Officers
+                          </span>
+                        </div>
+                        <div className="mt-3">
+                          <div className="flex justify-between text-xs font-semibold mb-1">
+                            <span>Readiness</span>
+                            <span>{z.readiness}%</span>
+                          </div>
+                          <div className="h-2 w-full bg-slatecool-200 rounded-full overflow-hidden">
+                            <div className="h-full bg-electric-500" style={{ width: `${z.readiness}%` }}></div>
+                          </div>
+                        </div>
+                        <div className="mt-3 pt-2 border-t border-slatecool-200 text-xs">
+                          <span className="text-slate-500 text-[11px]">Primary Training Gap:</span>
+                          <div className="font-bold text-crimsonsoft-600">⚠️ {z.topGap}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* OFFICIAL MANUALS LIBRARY */}
+              {activeTab === 'manuals' && (
+                <div className="space-y-6 animate-fadeIn">
+                  <div className="bg-white rounded-xl p-6 border border-slatecool-200 shadow-card">
+                    <h2 className="text-base font-bold text-slatenavy-900 mb-1">Indexed MoSPI Official Statistical Manuals</h2>
+                    <p className="text-xs text-slate-500 mb-4">Official procedural guides pre-loaded and ready for RAG question synthesis</p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {manuals.map(m => (
+                        <div key={m.id} className="p-4 rounded-xl border border-slatecool-200 bg-sand-50/40 flex flex-col justify-between">
+                          <div>
+                            <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-sand-200 text-slatenavy-900">{m.category}</span>
+                            <h4 className="font-bold text-sm text-slatenavy-900 mt-2">{m.title}</h4>
+                            <div className="text-xs text-slate-500 mt-1">{m.pages} pages • {m.size}</div>
+                          </div>
+                          <div className="mt-4 pt-2 border-t border-slatecool-200 flex items-center justify-between">
+                            <span className="font-mono text-[10px] text-slate-400">ns: {m.ns}</span>
+                            <button
+                              onClick={() => {
+                                setActiveQuiz(SAMPLE_MCQS);
+                                setCurrentQIdx(0);
+                                setUserAnswers({});
+                                setQuizResults(null);
+                                setActiveTab('assessment');
+                              }}
+                              className="text-xs font-bold text-electric-600 hover:text-electric-700"
+                            >
+                              Generate MCQs →
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+            </main>
+          </div>
+
+          {/* 3. FLOATING STATBOT ASSISTANT (MODULE E) */}
+          <div className="fixed bottom-6 right-6 z-50">
+            {!isStatBotOpen ? (
+              <button
+                onClick={() => setIsStatBotOpen(true)}
+                className="flex items-center space-x-2 bg-slatenavy-900 text-white px-4 py-3 rounded-full shadow-2xl hover:bg-slatenavy-800 transition-all border border-slatecool-300 ring-4 ring-electric-500/20"
+              >
+                <span className="text-lg">🤖</span>
+                <div className="text-left">
+                  <div className="text-xs font-bold">StatBot AI</div>
+                  <div className="text-[10px] text-slate-400">Statistical Assistant</div>
+                </div>
+              </button>
+            ) : (
+              <div className="bg-white rounded-2xl w-[360px] sm:w-[420px] h-[520px] border border-slatecool-200 shadow-2xl flex flex-col overflow-hidden animate-fadeIn">
+                <div className="bg-slatenavy-900 text-white p-3.5 flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-lg">🤖</span>
+                    <div>
+                      <div className="text-xs font-bold">StatBot Methodology Assistant</div>
+                      <div className="text-[10px] text-slate-400">RAG MoSPI Knowledge Base</div>
+                    </div>
+                  </div>
+                  <button onClick={() => setIsStatBotOpen(false)} className="text-slate-400 hover:text-white text-sm font-bold">✕</button>
+                </div>
+
+                {/* Quick Prompts */}
+                <div className="p-2 bg-sand-50 border-b border-slatecool-200 flex overflow-x-auto gap-1 text-[10px]">
+                  {['CPI Jevons vs Carli', 'NSSO FSU protocol', 'Core Industries weights'].map(p => (
+                    <button
+                      key={p}
+                      onClick={() => handleSendChat(p)}
+                      className="whitespace-nowrap px-2 py-0.5 rounded-full bg-white border border-slatecool-200 hover:border-electric-500 text-slatenavy-900"
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Messages */}
+                <div className="flex-1 p-4 overflow-y-auto space-y-3 text-xs bg-sand-50/30">
+                  {chatMessages.map(m => (
+                    <div key={m.id} className={`flex flex-col ${m.sender === 'user' ? 'items-end' : 'items-start'}`}>
+                      <div className={`p-3 rounded-2xl max-w-[88%] leading-relaxed ${
+                        m.sender === 'user' ? 'bg-electric-500 text-white' : 'bg-white border border-slatecool-200 text-slatenavy-900 shadow-sm'
+                      }`}>
+                        <div className="whitespace-pre-wrap">{m.text}</div>
+                        {m.citation && (
+                          <div className="mt-2 pt-1.5 border-t border-slatecool-100 text-[10px] text-electric-700 font-semibold">
+                            📖 {m.citation}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  {chatLoading && <div className="text-xs text-slate-400">StatBot is retrieving citations...</div>}
+                </div>
+
+                {/* Input */}
+                <form onSubmit={(e) => { e.preventDefault(); handleSendChat(); }} className="p-2 bg-white border-t border-slatecool-200 flex items-center space-x-2">
+                  <input
+                    type="text"
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    placeholder="Ask statistical methodology question..."
+                    className="flex-1 text-xs px-3 py-2 rounded-xl border border-slatecool-200 bg-sand-50/50 text-slatenavy-900 focus:outline-none"
+                  />
+                  <button type="submit" className="p-2 rounded-xl bg-electric-500 text-white hover:bg-electric-600 text-xs font-bold">
+                    Send
+                  </button>
+                </form>
+              </div>
+            )}
+          </div>
+
+          {/* 4. APAR EXPORT MODAL */}
+          {isAparModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slatenavy-900/70 backdrop-blur-sm animate-fadeIn">
+              <div className="bg-white rounded-2xl max-w-2xl w-full border border-slatecool-200 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+                <div className="bg-slatenavy-900 text-white p-4 flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold">Official MoSPI e-APAR Competency Dossier</h3>
+                    <p className="text-[11px] text-slate-300">iGOT Karmayogi FRAC Compliance Verification</p>
+                  </div>
+                  <button onClick={() => setIsAparModalOpen(false)} className="text-slate-400 hover:text-white">✕</button>
+                </div>
+
+                <div className="p-6 overflow-y-auto space-y-4 text-xs">
+                  <div className="text-center border-b border-slatecool-200 pb-3">
+                    <div className="text-2xl">🏛️</div>
+                    <h2 className="text-sm font-extrabold uppercase">Government of India</h2>
+                    <h3 className="text-xs font-bold text-slate-600">Ministry of Statistics and Programme Implementation</h3>
+                    <div className="text-[10px] font-mono text-slate-400 mt-1">Dossier ID: MOSPI-APAR-{currentUser.apar_id}-2025</div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 bg-sand-50 p-3 rounded-lg border border-slatecool-200">
+                    <div>Officer: <strong>{currentUser.name}</strong></div>
+                    <div>Cadre: <strong>{currentUser.role_title}</strong></div>
+                    <div>Zone: <strong>{currentUser.zone}</strong></div>
+                    <div>APAR ID: <strong className="text-electric-600">{currentUser.apar_id}</strong></div>
+                    <div>Readiness Index: <strong className="text-emeralddeep-700">{skillReadinessIndex}%</strong></div>
+                    <div>Status: <strong>{aparSynced ? 'SYNCHRONIZED' : 'PENDING'}</strong></div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-bold uppercase text-[10px] text-slate-500 mb-1">Competency Compliance Audit</h4>
+                    <div className="border border-slatecool-200 rounded-lg overflow-hidden">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-slatecool-100 font-bold text-[10px]">
+                          <tr>
+                            <th className="p-2">Competency</th>
+                            <th className="p-2 text-center">Assessed</th>
+                            <th className="p-2 text-center">Benchmark</th>
+                            <th className="p-2 text-right">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slatecool-200">
+                          {gapTableData.map(c => (
+                            <tr key={c.id}>
+                              <td className="p-2 font-medium">{c.name}</td>
+                              <td className="p-2 text-center font-bold">L{c.current}</td>
+                              <td className="p-2 text-center text-slate-500">L{c.required}</td>
+                              <td className="p-2 text-right">
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                  c.isVerified ? 'bg-emeralddeep-50 text-emeralddeep-700' : 'bg-crimsonsoft-50 text-crimsonsoft-600'
+                                }`}>
+                                  {c.isVerified ? 'VERIFIED' : 'GAP'}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-slatecool-200 flex items-center justify-between text-[11px] text-slate-500">
+                    <div>Digital Stamp: <span className="font-mono">{aparTxHash.slice(0, 24)}...</span></div>
+                    <div>Certified by: <strong>Joint Secretary (Training), MoSPI HQ</strong></div>
+                  </div>
+                </div>
+
+                <div className="bg-sand-50 p-3 border-t border-slatecool-200 flex justify-end space-x-2">
+                  <button onClick={() => setIsAparModalOpen(false)} className="px-3 py-1.5 rounded-lg border border-slatecool-300 text-xs">Close</button>
+                  <button onClick={() => window.print()} className="px-4 py-1.5 rounded-lg bg-electric-500 text-white text-xs font-bold hover:bg-electric-600">Print Dossier</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+        </div>
+      );
+    }
+
+    // Mount to DOM
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
