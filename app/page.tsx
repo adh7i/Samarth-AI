@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Navbar } from '@/components/Navbar';
 import { Sidebar, ActiveTab } from '@/components/Sidebar';
 import { CompetencyRadar } from '@/components/CompetencyRadar';
@@ -38,6 +39,10 @@ import {
 import confetti from 'canvas-confetti';
 
 export default function Home() {
+  const router = useRouter();
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
+  const [loggedInUserId, setLoggedInUserId] = useState<string | null>(null);
+
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserCompetencyProfileResponse | null>(null);
@@ -56,14 +61,29 @@ export default function Home() {
   const [activeQuiz, setActiveQuiz] = useState<Quiz | null>(null);
   const [isAparModalOpen, setIsAparModalOpen] = useState(false);
 
+  // ── Auth Guard ──
+  useEffect(() => {
+    const storedId = sessionStorage.getItem('ss_user_id');
+    if (!storedId) {
+      router.replace('/login');
+      return;
+    }
+    setLoggedInUserId(storedId);
+    setIsAuthChecked(true);
+  }, [router]);
+
   // Load initial officers and default profile
   useEffect(() => {
+    if (!isAuthChecked) return;
+
     fetch('/api/v1/auth/login')
       .then((res) => res.json())
       .then((json) => {
         if (json.success && json.available_officers?.length > 0) {
           setAllUsers(json.available_officers);
-          const defaultUser = json.available_officers[0];
+          // Prefer the session user; fall back to first officer
+          const sessionMatch = json.available_officers.find((u: User) => u.id === loggedInUserId);
+          const defaultUser = sessionMatch || json.available_officers[0];
           setCurrentUser(defaultUser);
           loadUserProfile(defaultUser.id);
         }
@@ -76,7 +96,7 @@ export default function Home() {
         if (json.success) setMaterials(json.materials);
       })
       .catch((err) => console.error(err));
-  }, []);
+  }, [isAuthChecked]);
 
   // Fetch user profile and iGOT recommendations
   const loadUserProfile = async (userId: string) => {
@@ -184,6 +204,36 @@ export default function Home() {
     }
   };
 
+  const handleLogout = () => {
+    sessionStorage.removeItem('ss_user_id');
+    sessionStorage.removeItem('ss_user_name');
+    router.push('/login');
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!currentUser) return;
+    try {
+      const res = await fetch('/api/v1/auth/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: currentUser.id })
+      });
+      const data = await res.json();
+      if (data.success) {
+        sessionStorage.removeItem('ss_user_id');
+        sessionStorage.removeItem('ss_user_name');
+        router.push('/login?mode=signup');
+      } else {
+        alert(data.error || 'Failed to delete account');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Error deleting account');
+    }
+  };
+
+  // Show nothing while auth check is in-flight (avoids flash of content)
+  if (!isAuthChecked) return null;
+
   return (
     <div className="min-h-screen flex flex-col bg-sand-100 font-sans">
       
@@ -194,6 +244,8 @@ export default function Home() {
         onSelectUser={handleSelectUser}
         aparStatus={profile?.apar_status}
         onOpenAparExport={() => setIsAparModalOpen(true)}
+        onLogout={handleLogout}
+        onDeleteAccount={handleDeleteAccount}
       />
 
       {/* Synchronized Notification Banner */}
@@ -215,6 +267,7 @@ export default function Home() {
             if (tab !== 'assessment') setActiveQuiz(null);
           }}
           gapCount={profile?.gap_count || 0}
+          unassessedCount={profile?.unassessed_count || 0}
           courseCount={recommendations.length}
           manualCount={materials.length}
         />
@@ -327,6 +380,7 @@ export default function Home() {
                         totalCompetencies={profile.total_competencies}
                         verifiedCount={profile.verified_competencies}
                         gapCount={profile.gap_count}
+                        unassessedCount={profile.unassessed_count}
                         onSyncApar={handleSyncApar}
                         isSyncing={isSyncingApar}
                       />

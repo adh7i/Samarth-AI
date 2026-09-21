@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Shield, Award, UserCheck, RefreshCw, Layers } from 'lucide-react';
+import { Shield, Award, UserCheck, RefreshCw, Layers, LogOut } from 'lucide-react';
 import { User } from '@/lib/types';
 
 interface NavbarProps {
@@ -15,6 +15,7 @@ interface NavbarProps {
     pending_updates: number;
   };
   onOpenAparExport?: () => void;
+  onDeleteAccount?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -23,6 +24,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSelectUser,
   aparStatus,
   onOpenAparExport,
+  onLogout,
+  onDeleteAccount,
 }) => {
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slatecool-200 shadow-soft">
@@ -70,7 +73,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 />
                 <span className="font-mono">{aparStatus.apar_id}</span>
                 <span>•</span>
-                <span>{aparStatus.synced ? 'iGOT Synced' : `${aparStatus.pending_updates} Gaps Pending`}</span>
+                <span>
+                  {aparStatus.synced 
+                    ? 'iGOT Synced' 
+                    : aparStatus.unassessed_count > 0 
+                      ? `${aparStatus.unassessed_count} Assessments Pending`
+                      : `${aparStatus.pending_updates} Gaps Pending`}
+                </span>
               </div>
             )}
 
@@ -97,6 +106,37 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
             </div>
 
+            {/* Actions: Sign Out & Delete */}
+            <div className="flex items-center space-x-2">
+              {onLogout && (
+                <button
+                  onClick={() => {
+                    if (window.confirm('Are you sure you want to sign out?')) {
+                      onLogout();
+                    }
+                  }}
+                  title="Sign out"
+                  className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-sand-100 border border-slatecool-200 text-xs font-semibold text-slatenavy-900 hover:bg-slatecool-200 transition-all"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Sign Out</span>
+                </button>
+              )}
+              {onDeleteAccount && (
+                <button
+                  onClick={() => {
+                    if (window.confirm('Are you sure you want to permanently delete this account? This action cannot be undone.')) {
+                      onDeleteAccount();
+                    }
+                  }}
+                  title="Delete Account"
+                  className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border border-crimsonsoft-200 bg-crimsonsoft-50 text-xs font-semibold text-crimsonsoft-600 hover:bg-crimsonsoft-100 transition-all"
+                >
+                  <span className="hidden xl:inline">Delete Account</span>
+                  <span className="xl:hidden">Delete</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

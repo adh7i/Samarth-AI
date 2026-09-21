@@ -31,10 +31,12 @@ export async function POST(request: Request) {
       targetTopic: target_topic
     });
 
+    const savedQuiz = db.addQuiz(generatedQuiz);
+
     return NextResponse.json({
       success: true,
-      message: `Generated ${generatedQuiz.questions_json.length} MCQs at Bloom's level: ${validatedBlooms}`,
-      quiz: generatedQuiz
+      message: `Generated ${savedQuiz.questions_json.length} MCQs at Bloom's level: ${validatedBlooms}`,
+      quiz: savedQuiz
     });
   } catch (error: any) {
     return NextResponse.json(

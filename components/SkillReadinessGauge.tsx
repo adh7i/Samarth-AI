@@ -8,6 +8,7 @@ interface SkillReadinessGaugeProps {
   totalCompetencies: number;
   verifiedCount: number;
   gapCount: number;
+  unassessedCount?: number;
   onSyncApar?: () => void;
   isSyncing?: boolean;
 }
@@ -17,6 +18,7 @@ export const SkillReadinessGauge: React.FC<SkillReadinessGaugeProps> = ({
   totalCompetencies,
   verifiedCount,
   gapCount,
+  unassessedCount,
   onSyncApar,
   isSyncing = false,
 }) => {
@@ -52,19 +54,19 @@ export const SkillReadinessGauge: React.FC<SkillReadinessGaugeProps> = ({
 
   return (
     <div className="bg-white rounded-xl p-6 border border-slatecool-200 shadow-card">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4">
         <div>
-          <h3 className="text-base font-bold text-slatenavy-900 flex items-center space-x-2">
+          <h3 className="text-base font-bold text-slatenavy-900 flex flex-wrap items-center gap-2">
             <span>Skill Readiness Index (SRI)</span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-sand-100 text-slatenavy-900/80 font-mono border border-slatecool-200">
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-sand-100 text-slatenavy-900/80 font-mono border border-slatecool-200 whitespace-nowrap flex-shrink-0">
               FRAC V2
             </span>
           </h3>
-          <p className="text-xs text-slatenavy-900/60 mt-0.5">
+          <p className="text-xs text-slatenavy-900/60 mt-1">
             Automated compliance score across official statistical roles
           </p>
         </div>
-        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${status.badgeBg}`}>
+        <span className={`text-[11px] sm:text-xs font-semibold px-2.5 py-1 rounded-full border text-center flex-shrink-0 h-fit ${status.badgeBg}`}>
           {status.label}
         </span>
       </div>
@@ -109,38 +111,56 @@ export const SkillReadinessGauge: React.FC<SkillReadinessGaugeProps> = ({
         </div>
 
         {/* Detailed Breakdown Metrics */}
-        <div className="flex-1 grid grid-cols-2 gap-3 w-full">
+        <div className="flex-1 grid grid-cols-2 gap-2 w-full">
           
-          <div className="p-3 bg-sand-50 rounded-lg border border-slatecool-200">
-            <div className="flex items-center space-x-2 text-emeralddeep-600 mb-1">
-              <CheckCircle2 className="w-4 h-4" />
-              <span className="text-xs font-bold">Verified</span>
+          <div className="p-2 bg-sand-50 rounded-lg border border-slatecool-200 flex flex-col justify-between">
+            <div className="flex items-start space-x-1 text-emeralddeep-600 mb-1">
+              <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
+              <span className="text-[10px] font-bold leading-tight break-words">Verified</span>
             </div>
-            <div className="text-xl font-extrabold text-slatenavy-900">
-              {verifiedCount} <span className="text-xs font-normal text-slate-500">/ {totalCompetencies}</span>
+            <div className="text-xl font-extrabold text-slatenavy-900 flex items-baseline space-x-1">
+              <span>{verifiedCount}</span>
+              <span className="text-[10px] font-normal text-slate-500">/ {totalCompetencies}</span>
             </div>
-            <div className="text-[11px] text-slate-500">Benchmarks Achieved</div>
+            <div className="text-[10px] text-slate-500 leading-tight mt-0.5">Benchmarks Met</div>
           </div>
 
-          <div className="p-3 bg-sand-50 rounded-lg border border-slatecool-200">
-            <div className="flex items-center space-x-2 text-crimsonsoft-600 mb-1">
-              <AlertTriangle className="w-4 h-4" />
-              <span className="text-xs font-bold">Skill Gaps</span>
-            </div>
-            <div className="text-xl font-extrabold text-crimsonsoft-600">
-              {gapCount} <span className="text-xs font-normal text-slate-500">competencies</span>
-            </div>
-            <div className="text-[11px] text-slate-500">Under Target Level</div>
+          <div className="p-2 bg-sand-50 rounded-lg border border-slatecool-200 flex flex-col justify-between overflow-hidden">
+            {unassessedCount && unassessedCount > 0 ? (
+              <>
+                <div className="flex items-start space-x-1 text-slatenavy-600 mb-1">
+                  <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="text-[10px] font-bold leading-tight break-words">Unassessed</span>
+                </div>
+                <div className="text-xl font-extrabold text-slatenavy-900 flex items-baseline space-x-1">
+                  <span>{unassessedCount}</span>
+                  <span className="text-[10px] font-normal text-slate-500">pending</span>
+                </div>
+                <div className="text-[10px] text-slate-500 leading-tight mt-0.5 break-words">Needs AI Eval</div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-start space-x-1 text-crimsonsoft-600 mb-1">
+                  <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="text-[10px] font-bold leading-tight break-words">Skill Gaps</span>
+                </div>
+                <div className="text-xl font-extrabold text-crimsonsoft-600 flex items-baseline space-x-1">
+                  <span>{gapCount}</span>
+                  <span className="text-[10px] font-normal text-slate-500">gaps</span>
+                </div>
+                <div className="text-[10px] text-slate-500 leading-tight mt-0.5 break-words">Under Target</div>
+              </>
+            )}
           </div>
 
-          <div className="col-span-2 p-2.5 bg-electric-50 rounded-lg border border-electric-100 flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <ShieldCheck className="w-4 h-4 text-electric-600" />
-              <span className="text-xs font-medium text-slatenavy-900">
+          <div className="col-span-2 p-2.5 bg-electric-50 rounded-lg border border-electric-100 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+            <div className="flex items-start sm:items-center space-x-2">
+              <ShieldCheck className="w-4 h-4 text-electric-600 flex-shrink-0 mt-0.5 sm:mt-0" />
+              <span className="text-xs font-medium text-slatenavy-900 leading-tight">
                 Next Promotion Threshold: <strong>80% SRI</strong>
               </span>
             </div>
-            <span className="text-[11px] font-bold text-electric-600">
+            <span className="text-[11px] font-bold text-electric-600 sm:text-right">
               {readinessIndex >= 80 ? '✓ Eligible' : `${80 - readinessIndex}% needed`}
             </span>
           </div>

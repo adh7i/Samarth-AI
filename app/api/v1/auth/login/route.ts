@@ -4,17 +4,22 @@ import { db } from '@/lib/db/database';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { userId = 'usr_iss_001', role } = body;
+    const { email, password } = body;
 
-    const users = db.getUsers();
-    let selectedUser = users.find(u => u.id === userId);
-
-    if (!selectedUser && role) {
-      selectedUser = users.find(u => u.role_title.toLowerCase().includes(role.toLowerCase()));
+    if (!email || !password) {
+      return NextResponse.json(
+        { success: false, error: 'Email and password are required' },
+        { status: 400 }
+      );
     }
 
+    const selectedUser = db.verifyLogin(email, password);
+
     if (!selectedUser) {
-      selectedUser = users[0];
+      return NextResponse.json(
+        { success: false, error: 'Invalid credentials' },
+        { status: 401 }
+      );
     }
 
     const profile = db.getUserCompetencyProfile(selectedUser.id);

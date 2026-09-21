@@ -126,6 +126,7 @@ export interface UserCompetencyProfileResponse {
   total_competencies: number;
   verified_competencies: number;
   gap_count: number;
+  unassessed_count: number;
   radar_data: {
     competency: string;
     current: number;

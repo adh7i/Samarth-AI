@@ -24,6 +24,7 @@ import {
 // Singleton in-memory state store with initial seed
 class StatSamarthDatabase {
   private users: Map<string, User> = new Map();
+  private credentials: Map<string, string> = new Map(); // email -> password
   private competencies: Map<string, FracCompetency> = new Map();
   private userScores: Map<string, UserCompetencyScore> = new Map();
   private igotCourses: Map<string, IGotCourse> = new Map();
@@ -37,7 +38,17 @@ class StatSamarthDatabase {
   }
 
   private seed() {
-    SEED_USERS.forEach(u => this.users.set(u.id, { ...u }));
+    SEED_USERS.forEach(u => {
+      this.users.set(u.id, { ...u });
+      // Default seed passwords
+      this.credentials.set(u.email.toLowerCase(), 'mospi@2024');
+    });
+
+    // Fallback demo credentials from the original UI
+    this.credentials.set('iss.officer@mospi.gov.in', 'mospi@2024');
+    this.credentials.set('dd.nsso@mospi.gov.in', 'nsso@2024');
+    this.credentials.set('dir.field@mospi.gov.in', 'field@2024');
+
     SEED_COMPETENCIES.forEach(c => this.competencies.set(c.id, { ...c }));
     SEED_USER_SCORES.forEach(s => this.userScores.set(`${s.user_id}_${s.competency_id}`, { ...s }));
     SEED_IGOT_COURSES.forEach(c => this.igotCourses.set(c.id, { ...c }));
@@ -57,6 +68,73 @@ class StatSamarthDatabase {
       tx_hash: '0x3adc9102b4491efa91845112df88',
       count: 3
     });
+  }
+
+  public addUser(userData: Omit<User, 'id' | 'created_at' | 'apar_id'>, password?: string): User {
+    const id = `usr_custom_${Date.now()}`;
+    const newUser: User = {
+      ...userData,
+      id,
+      created_at: new Date().toISOString(),
+      apar_id: `APAR-${new Date().getFullYear()}-CUSTOM-${Math.floor(Math.random() * 9000) + 1000}`
+    };
+
+    this.users.set(id, newUser);
+    if (password) {
+      this.credentials.set(newUser.email.toLowerCase(), password);
+    }
+
+    // Initialize baseline competencies with 0 (unassessed) instead of randomized scores
+    this.getCompetencies().forEach(comp => {
+      this.userScores.set(`${id}_${comp.id}`, {
+        id: `sc_${id}_${comp.id}`,
+        user_id: id,
+        competency_id: comp.id,
+        current_level: 0,
+        last_assessed_at: new Date().toISOString()
+      });
+    });
+
+    return newUser;
+  }
+
+  public verifyLogin(email: string, password?: string): User | null {
+    const targetEmail = email.toLowerCase();
+
+    // For legacy demo accounts mapping to first user
+    if (['iss.officer@mospi.gov.in', 'dd.nsso@mospi.gov.in', 'dir.field@mospi.gov.in'].includes(targetEmail)) {
+      const userIndex = ['iss.officer@mospi.gov.in', 'dd.nsso@mospi.gov.in', 'dir.field@mospi.gov.in'].indexOf(targetEmail);
+      return this.getUsers()[Math.min(userIndex, this.getUsers().length - 1)];
+    }
+
+    const storedPass = this.credentials.get(targetEmail);
+    if (storedPass && storedPass === password) {
+      return this.getUsers().find(u => u.email.toLowerCase() === targetEmail) || null;
+    }
+    return null;
+  }
+
+  public deleteUser(userId: string): boolean {
+    if (!this.users.has(userId)) return false;
+
+    const user = this.users.get(userId);
+    if (user) {
+      this.credentials.delete(user.email.toLowerCase());
+    }
+
+    this.users.delete(userId);
+
+    // Cleanup scores
+    const scoreKeysToDelete: string[] = [];
+    this.userScores.forEach((v, k) => {
+      if (v.user_id === userId) scoreKeysToDelete.push(k);
+    });
+    scoreKeysToDelete.forEach(k => this.userScores.delete(k));
+
+    // Cleanup other records
+    this.aparSyncRecords.delete(userId);
+
+    return true;
   }
 
   public getUsers(): User[] {
@@ -86,9 +164,10 @@ class StatSamarthDatabase {
     allCompetencies.forEach(comp => {
       const scoreKey = `${userId}_${comp.id}`;
       const userScore = this.userScores.get(scoreKey);
-      const currentLevel = userScore ? userScore.current_level : 1;
+      const currentLevel = userScore ? userScore.current_level : 0;
       const requiredLevel = comp.required_level;
-      const gap = Math.max(0, requiredLevel - currentLevel);
+
+      const gap = currentLevel === 0 ? 0 : Math.max(0, requiredLevel - currentLevel);
       const isVerified = currentLevel >= requiredLevel;
 
       if (isVerified) {
@@ -96,9 +175,13 @@ class StatSamarthDatabase {
       }
 
       totalRequired += requiredLevel;
-      totalAchieved += Math.min(currentLevel, requiredLevel);
+      totalAchieved += currentLevel === 0 ? 0 : Math.min(currentLevel, requiredLevel);
 
-      const readinessPct = Math.round((Math.min(currentLevel, requiredLevel) / requiredLevel) * 100);
+      const readinessPct = currentLevel === 0 ? 0 : Math.round((Math.min(currentLevel, requiredLevel) / requiredLevel) * 100);
+
+      let status = 'GAP_IDENTIFIED';
+      if (currentLevel === 0) status = 'PENDING_ASSESSMENT';
+      else if (isVerified) status = 'VERIFIED';
 
       // Find recommended iGOT course for this competency
       const recommendedCourse = Array.from(this.igotCourses.values()).find(
@@ -112,7 +195,7 @@ class StatSamarthDatabase {
         required_level: requiredLevel,
         current_level: currentLevel,
         gap,
-        status: isVerified ? 'VERIFIED' : 'GAP_IDENTIFIED',
+        status,
         readiness_percentage: readinessPct,
         recommended_course: recommendedCourse
       });
@@ -128,7 +211,8 @@ class StatSamarthDatabase {
 
     // Skill Readiness Index calculation
     const readiness_index = totalRequired > 0 ? Math.round((totalAchieved / totalRequired) * 100) : 0;
-    const gap_count = allCompetencies.length - verifiedCount;
+    const gap_count = gaps.filter(g => g.status === 'GAP_IDENTIFIED').length;
+    const unassessed_count = gaps.filter(g => g.status === 'PENDING_ASSESSMENT').length;
 
     const userAttempts = this.quizAttempts.filter(a => a.user_id === userId);
     const aparRecord = this.aparSyncRecords.get(userId) || {
@@ -144,6 +228,7 @@ class StatSamarthDatabase {
       total_competencies: allCompetencies.length,
       verified_competencies: verifiedCount,
       gap_count,
+      unassessed_count,
       radar_data,
       gaps,
       recent_attempts: userAttempts.slice(-5).reverse(),
@@ -151,7 +236,8 @@ class StatSamarthDatabase {
         synced: aparRecord.synced,
         last_sync: aparRecord.last_sync,
         apar_id: user.apar_id,
-        pending_updates: gap_count
+        pending_updates: gap_count,
+        unassessed_count: unassessed_count
       }
     };
   }
@@ -159,7 +245,7 @@ class StatSamarthDatabase {
   public updateCompetencyScore(userId: string, competencyId: string, levelDelta: number = 1): UserCompetencyScore {
     const key = `${userId}_${competencyId}`;
     const existing = this.userScores.get(key);
-    const current = existing ? existing.current_level : 1;
+    const current = existing ? existing.current_level : 0;
     const newLevel = Math.min(5, Math.max(1, current + levelDelta));
 
     const updated: UserCompetencyScore = {
@@ -257,23 +343,36 @@ class StatSamarthDatabase {
     let competencyAdvancement = null;
     let competencyDelta = 0;
 
-    // If passed, find related competency to advance
-    if (passed) {
-      competencyDelta = 1;
-      // Determine competency from quiz questions or material
-      let targetCompId = quiz.questions_json[0]?.competency_id;
-      if (!targetCompId) {
-        if (quizId.includes('cpi')) targetCompId = 'comp_02';
-        else if (quizId.includes('nsso')) targetCompId = 'comp_01';
-        else targetCompId = 'comp_05';
+    // Determine competency from quiz questions or material
+    let targetCompId = quiz.questions_json[0]?.competency_id;
+    if (!targetCompId) {
+      if (quizId.includes('cpi')) targetCompId = 'comp_02';
+      else if (quizId.includes('nsso')) targetCompId = 'comp_01';
+      else targetCompId = 'comp_05';
+    }
+
+    const comp = this.competencies.get(targetCompId);
+    if (comp) {
+      const scoreKey = `${userId}_${comp.id}`;
+      const existingScore = this.userScores.get(scoreKey);
+      const oldLevel = existingScore ? existingScore.current_level : 0;
+
+      // Calculate level based on score if they were unassessed, or apply delta
+      let newLevel = oldLevel;
+
+      if (oldLevel === 0) {
+        // Initial assessment mapping
+        if (score_percentage >= 80) newLevel = Math.max(3, comp.required_level);
+        else if (score_percentage >= 60) newLevel = 2;
+        else newLevel = 1;
+      } else {
+        // Incremental improvement if they passed
+        if (passed) newLevel = Math.min(5, oldLevel + 1);
       }
 
-      const comp = this.competencies.get(targetCompId);
-      if (comp) {
-        const scoreKey = `${userId}_${comp.id}`;
-        const existingScore = this.userScores.get(scoreKey);
-        const oldLevel = existingScore ? existingScore.current_level : 1;
-        const updated = this.updateCompetencyScore(userId, comp.id, 1);
+      if (newLevel !== oldLevel) {
+        competencyDelta = newLevel - oldLevel;
+        const updated = this.updateCompetencyScore(userId, comp.id, competencyDelta);
         competencyAdvancement = {
           competency_name: comp.competency_name,
           old_level: oldLevel,
@@ -378,6 +477,8 @@ class StatSamarthDatabase {
   public getZonalAnalytics(): ZonalCapacityData[] {
     return SEED_ZONAL_ANALYTICS;
   }
+
+  public forceHmrUpdate() { }
 }
 
 // Global instance for Next.js API routes
@@ -386,7 +487,12 @@ declare global {
   var __statsamarth_db: StatSamarthDatabase | undefined;
 }
 
-export const db = global.__statsamarth_db || new StatSamarthDatabase();
-if (process.env.NODE_ENV !== 'production') {
-  global.__statsamarth_db = db;
+let instance = global.__statsamarth_db;
+if (!instance || typeof instance.addUser !== 'function' || typeof (instance as any).forceHmrUpdate !== 'function') {
+  instance = new StatSamarthDatabase();
+  if (process.env.NODE_ENV !== 'production') {
+    global.__statsamarth_db = instance;
+  }
 }
+
+export const db = instance;

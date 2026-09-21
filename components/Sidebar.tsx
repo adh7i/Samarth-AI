@@ -19,6 +19,7 @@ interface SidebarProps {
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
   gapCount?: number;
+  unassessedCount?: number;
   courseCount?: number;
   manualCount?: number;
 }
@@ -27,6 +28,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   setActiveTab,
   gapCount = 0,
+  unassessedCount = 0,
   courseCount = 0,
   manualCount = 4,
 }) => {
@@ -36,8 +38,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'FRAC Radar & Gaps',
       subtext: 'Module A: Skill Readiness',
       icon: LayoutDashboard,
-      badge: gapCount > 0 ? `${gapCount} Gaps` : 'Verified',
-      badgeColor: gapCount > 0 ? 'bg-crimsonsoft-600 text-white' : 'bg-emeralddeep-600 text-white',
+      badge: gapCount > 0 ? `${gapCount} Gaps` : unassessedCount > 0 ? `${unassessedCount} Pending` : 'Verified',
+      badgeColor: gapCount > 0 ? 'bg-crimsonsoft-600 text-white' : unassessedCount > 0 ? 'bg-slatecool-600 text-white' : 'bg-emeralddeep-600 text-white',
     },
     {
       id: 'assessment' as ActiveTab,

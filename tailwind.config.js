@@ -21,6 +21,9 @@ module.exports = {
         electric: {
           50: '#EFF6FF',
           100: '#DBEAFE',
+          200: '#BFDBFE',
+          300: '#93C5FD',
+          400: '#60A5FA',
           500: '#3B82F6', // Electric Sky Blue
           600: '#2563EB',
           700: '#1D4ED8',
@@ -34,6 +37,7 @@ module.exports = {
         },
         // Minor Work / Accent & Status (10%)
         slatenavy: {
+          700: '#334155',
           800: '#1E293B',
           900: '#0F172A', // Slate Navy Dark
           950: '#020617',
@@ -47,6 +51,9 @@ module.exports = {
         crimsonsoft: {
           50: '#FFF1F2',
           100: '#FFE4E6',
+          200: '#FECDD3',
+          300: '#FDA4AF',
+          400: '#FB7185',
           500: '#F43F5E',
           600: '#E11D48', // Soft Crimson
           700: '#BE123C',

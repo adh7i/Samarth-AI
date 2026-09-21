@@ -1,47 +1,6 @@
 import { User, FracCompetency, UserCompetencyScore, IGotCourse, LearningMaterial, Quiz } from '../types';
 
-export const SEED_USERS: User[] = [
-  {
-    id: 'usr_iss_001',
-    name: 'Dr. Rajeshwar Sharma, ISS',
-    email: 'rajeshwar.sharma@mospi.gov.in',
-    role_title: 'Senior Statistical Officer (ISS)',
-    zone: 'North Zone - New Delhi',
-    apar_id: 'APAR-2025-ISS-8842',
-    department: 'National Accounts Division (NAD)',
-    created_at: '2023-04-15T09:00:00Z',
-  },
-  {
-    id: 'usr_iss_002',
-    name: 'Pooja Varma, ISS',
-    email: 'pooja.varma@mospi.gov.in',
-    role_title: 'Sub-Assistant Director (FOD NSSO)',
-    zone: 'East Zone - Kolkata',
-    apar_id: 'APAR-2025-ISS-9120',
-    department: 'Field Operations Division (FOD), NSSO',
-    created_at: '2023-06-10T11:30:00Z',
-  },
-  {
-    id: 'usr_iss_003',
-    name: 'Ananthakrishnan K., SSS',
-    email: 'k.ananthakrishnan@mospi.gov.in',
-    role_title: 'Junior Statistical Officer (ESD)',
-    zone: 'South Zone - Bengaluru',
-    apar_id: 'APAR-2025-SSS-4401',
-    department: 'Economic Statistics Division (ESD - CPI/IIP)',
-    created_at: '2024-01-20T14:00:00Z',
-  },
-  {
-    id: 'usr_iss_004',
-    name: 'Sunita Deshmukh',
-    email: 'sunita.deshmukh@mospi.gov.in',
-    role_title: 'Joint Director (DIID)',
-    zone: 'West Zone - Mumbai',
-    apar_id: 'APAR-2025-ISS-3211',
-    department: 'Data Informatics and Innovation Division',
-    created_at: '2022-11-05T10:00:00Z',
-  }
-];
+export const SEED_USERS: User[] = [];
 
 export const SEED_COMPETENCIES: FracCompetency[] = [
   {
