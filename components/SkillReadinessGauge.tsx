@@ -53,7 +53,7 @@ export const SkillReadinessGauge: React.FC<SkillReadinessGaugeProps> = ({
   const status = getStatusDetails();
 
   return (
-    <div className="bg-white rounded-xl p-6 border border-slatecool-200 shadow-card">
+    <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4">
         <div>
           <h3 className="text-base font-bold text-slatenavy-900 flex flex-wrap items-center gap-2">

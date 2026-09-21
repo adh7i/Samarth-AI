@@ -85,7 +85,7 @@ function localSmartAnswer(
   // ── Who are you / what can you do ───────────────────────────────────────────
   if (/who are you|what (are|can) you|your (name|purpose)|about you/.test(qLower)) {
     return {
-      text: `I'm **StatBot** — an AI assistant built specifically for MoSPI officers on the **StatSamarth AI** platform.\n\nI use a **Retrieval-Augmented Generation (RAG)** pipeline over official MoSPI methodology manuals to answer questions about:\n\n- Consumer Price Index (CPI) methodology\n- NSSO survey sampling designs\n- Index of Industrial Production (IIP)\n- National Accounts Statistics (GVA, GDP, FISIM)\n- iGOT Karmayogi FRAC competency framework\n\nAsk me anything related to official Indian statistical methodology!`,
+      text: `I'm **StatBot** — an AI assistant built specifically for MoSPI officers on the **अध्ययन** platform.\n\nI use a **Retrieval-Augmented Generation (RAG)** pipeline over official MoSPI methodology manuals to answer questions about:\n\n- Consumer Price Index (CPI) methodology\n- NSSO survey sampling designs\n- Index of Industrial Production (IIP)\n- National Accounts Statistics (GVA, GDP, FISIM)\n- iGOT Karmayogi FRAC competency framework\n\nAsk me anything related to official Indian statistical methodology!`,
       citations: []
     };
   }
@@ -127,7 +127,7 @@ function localSmartAnswer(
   // ── FRAC / iGOT / Karmayogi / Competency ────────────────────────────────────
   if (/frac|igot|karmayogi|competency|competencies|gap|apar|skill|training|proficiency/.test(qLower)) {
     return {
-      text: `## iGOT Karmayogi FRAC Framework\n\n**FRAC** stands for **F**unctions, **R**oles, **A**ctivities & **C**ompetencies — the official competency mapping framework for Government of India officers under the Karmayogi Mission.\n\n**Key Components:**\n- **Roles** → mapped to official post designations (e.g., ISS Officer, Deputy Director)\n- **Activities** → day-to-day tasks linked to each role\n- **Competencies** → knowledge, skills & behaviours required at each proficiency level (1–5)\n\n**StatSamarth AI uses FRAC to:**\n1. Assess your current competency level across 10+ domains\n2. Identify gaps vs. required MoSPI benchmark levels\n3. Recommend targeted iGOT Karmayogi courses to bridge gaps\n4. Generate RAG-based MCQ assessments from official manuals\n5. Sync verified assessments to your **e-APAR Passbook**\n\n**Proficiency Scale:** 1 (Awareness) → 5 (Expert/Mastery)\n\nCheck the **Dashboard** tab to view your FRAC gap analysis!`,
+      text: `## iGOT Karmayogi FRAC Framework\n\n**FRAC** stands for **F**unctions, **R**oles, **A**ctivities & **C**ompetencies — the official competency mapping framework for Government of India officers under the Karmayogi Mission.\n\n**Key Components:**\n- **Roles** → mapped to official post designations (e.g., ISS Officer, Deputy Director)\n- **Activities** → day-to-day tasks linked to each role\n- **Competencies** → knowledge, skills & behaviours required at each proficiency level (1–5)\n\n**अध्ययन uses FRAC to:**\n1. Assess your current competency level across 10+ domains\n2. Identify gaps vs. required MoSPI benchmark levels\n3. Recommend targeted iGOT Karmayogi courses to bridge gaps\n4. Generate RAG-based MCQ assessments from official manuals\n5. Sync verified assessments to your **e-APAR Passbook**\n\n**Proficiency Scale:** 1 (Awareness) → 5 (Expert/Mastery)\n\nCheck the **Dashboard** tab to view your FRAC gap analysis!`,
       citations: []
     };
   }
@@ -172,7 +172,7 @@ export async function POST(request: Request) {
     const knowledgeContext = buildKnowledgeContext(searchResults);
 
     if (process.env.GEMINI_API_KEY) {
-      const systemPrompt = `You are StatBot, an expert AI assistant for MoSPI (Ministry of Statistics and Programme Implementation) officers on the StatSamarth AI platform.
+      const systemPrompt = `You are StatBot, an expert AI assistant for MoSPI (Ministry of Statistics and Programme Implementation) officers on the अध्ययन platform.
 
 You answer questions accurately and helpfully. For statistical/MoSPI questions, use the provided knowledge context. For general questions (math, general knowledge, greetings), answer them directly and naturally.
 

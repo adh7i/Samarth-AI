@@ -76,21 +76,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   return (
-    <aside className="w-64 bg-slatenavy-900 text-slate-200 min-h-[calc(100vh-4rem)] flex flex-col justify-between p-4 shadow-xl border-r border-slatenavy-800">
-      <div>
-        {/* Cadre Badge */}
-        <div className="mb-6 px-3 py-2 bg-slatenavy-800/80 rounded-lg border border-slatenavy-800">
-          <div className="flex items-center space-x-2 text-xs font-semibold text-electric-500 uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Karmayogi FRAC Engine</span>
-          </div>
-          <div className="text-[11px] text-slate-400 mt-0.5">
-            Statistical Cadre Competency Matrix
-          </div>
-        </div>
-
+    <nav className="w-full bg-slatenavy-900 text-slate-200 border-b border-slatenavy-800 sticky top-16 z-30 shadow-md">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
         {/* Navigation Items */}
-        <nav className="space-y-1.5">
+        <div className="flex items-center space-x-2 overflow-x-auto hide-scrollbar">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -98,33 +87,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-left transition-all duration-200 group ${
+                className={`flex-shrink-0 flex items-center space-x-2.5 px-4 py-2 rounded-lg transition-all duration-200 group ${
                   isActive
-                    ? 'bg-electric-500 text-white shadow-md font-semibold'
-                    : 'text-slate-300 hover:bg-slatenavy-800 hover:text-white'
+                    ? 'bg-electric-500 text-white shadow-sm font-semibold'
+                    : 'text-slate-400 hover:bg-slatenavy-800/80 hover:text-white'
                 }`}
               >
-                <div className="flex items-center space-x-3">
-                  <Icon
-                    className={`w-5 h-5 transition-transform group-hover:scale-110 ${
-                      isActive ? 'text-white' : 'text-slate-400 group-hover:text-electric-500'
-                    }`}
-                  />
-                  <div>
-                    <div className="text-sm font-medium leading-none mb-1">{item.label}</div>
-                    <div
-                      className={`text-[11px] leading-none ${
-                        isActive ? 'text-white/80' : 'text-slate-400'
-                      }`}
-                    >
-                      {item.subtext}
-                    </div>
-                  </div>
-                </div>
-
+                <Icon
+                  className={`w-4 h-4 transition-transform group-hover:scale-110 ${
+                    isActive ? 'text-white' : 'text-slate-400 group-hover:text-electric-500'
+                  }`}
+                />
+                <span className="text-sm font-medium whitespace-nowrap">{item.label}</span>
                 {item.badge && (
                   <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${item.badgeColor}`}
+                    className={`ml-2 text-[10px] font-bold px-2 py-0.5 rounded-full ${item.badgeColor}`}
                   >
                     {item.badge}
                   </span>
@@ -132,19 +109,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </button>
             );
           })}
-        </nav>
-      </div>
-
-      {/* Footer Info Box */}
-      <div className="mt-8 p-3 bg-slatenavy-800/50 rounded-xl border border-slatenavy-800 text-xs text-slate-400">
-        <div className="flex items-center justify-between mb-1">
-          <span className="font-semibold text-slate-200">Framework V2.4</span>
-          <span className="inline-block w-2 h-2 rounded-full bg-emeralddeep-500" />
         </div>
-        <p className="text-[11px] leading-relaxed text-slate-400">
-          Aligned with MoSPI ISS Cadre Capacity Building Guidelines & Karmayogi Bharat APAR specs.
-        </p>
       </div>
-    </aside>
+    </nav>
   );
 };

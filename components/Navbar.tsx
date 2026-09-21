@@ -39,16 +39,21 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="font-extrabold text-lg text-slatenavy-900 tracking-tight">
-                  StatSamarth <span className="text-electric-500">AI</span>
+                <span 
+                  className="font-extrabold text-3xl tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-600 drop-shadow-sm leading-none pt-1 pb-1"
+                  style={{ fontFamily: '"Yatra One", serif' }}
+                >
+                  अध्ययन
                 </span>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300">
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300 transform -translate-y-0.5">
                   MoSPI Official
                 </span>
               </div>
-              <p className="text-xs text-slatenavy-900/60 font-medium">
-                Integrated with iGOT Karmayogi FRAC Framework
-              </p>
+              <div className="-mt-1.5">
+                <span className="inline-block px-2 py-0.5 rounded border border-slatenavy-900/20 bg-transparent text-[10px] font-semibold text-slatenavy-900/70 tracking-wide">
+                  iGOT FRAC Integrated
+                </span>
+              </div>
             </div>
           </div>
 

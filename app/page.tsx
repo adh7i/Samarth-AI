@@ -257,9 +257,9 @@ export default function Home() {
       )}
 
       {/* Main Workspace Layout */}
-      <div className="flex-1 flex max-w-7xl w-full mx-auto">
+      <div className="flex-1 flex flex-col w-full">
         
-        {/* 2. Slate Navy Dark Navigation Sidebar */}
+        {/* 2. Slate Navy Dark Navigation (Now Topbar) */}
         <Sidebar
           activeTab={activeTab}
           setActiveTab={(tab) => {
@@ -273,7 +273,7 @@ export default function Home() {
         />
 
         {/* 3. Dynamic Main Content Area */}
-        <main className="flex-1 p-6 sm:p-8 space-y-6 overflow-y-auto">
+        <main className="flex-1 p-4 sm:p-8 space-y-6 overflow-y-auto max-w-7xl w-full mx-auto">
           
           {loading && !profile ? (
             <div className="bg-white rounded-xl p-12 text-center text-xs text-slate-500 border border-slatecool-200 shadow-soft">
@@ -284,7 +284,7 @@ export default function Home() {
             <>
               {/* Officer Role Profile Banner */}
               {currentUser && (
-                <div className="bg-white rounded-xl p-6 border border-slatecool-200 shadow-card flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                   <div className="flex items-center space-x-4">
                     <div className="w-14 h-14 rounded-2xl bg-slatenavy-900 text-white flex items-center justify-center font-extrabold text-lg shadow-md border-2 border-electric-500/30">
                       {currentUser.name.split(' ')[0][0]}{currentUser.name.split(' ')[1]?.[0] || 'S'}
@@ -341,7 +341,7 @@ export default function Home() {
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     
                     {/* Visual Skill Radar Chart (7 cols) */}
-                    <div className="lg:col-span-7 bg-white rounded-xl p-6 border border-slatecool-200 shadow-card flex flex-col justify-between">
+                    <div className="lg:col-span-7 bg-white rounded-xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
                       <div className="flex items-center justify-between mb-2">
                         <div>
                           <h2 className="text-base font-bold text-slatenavy-900 flex items-center space-x-2">
@@ -386,7 +386,7 @@ export default function Home() {
                       />
 
                       {/* Quick AI Action Card */}
-                      <div className="mt-4 bg-gradient-to-r from-slatenavy-900 to-slatenavy-800 text-white rounded-xl p-5 shadow-card border border-slatenavy-700 flex items-center justify-between">
+                      <div className="mt-4 bg-gradient-to-r from-slatenavy-900 to-slatenavy-800 text-white rounded-xl p-5 shadow-md border border-slatenavy-700 flex items-center justify-between">
                         <div>
                           <div className="flex items-center space-x-1.5 text-xs font-bold text-electric-400 uppercase tracking-wider mb-1">
                             <Sparkles className="w-3.5 h-3.5" />

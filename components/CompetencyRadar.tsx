@@ -33,7 +33,9 @@ const CustomTooltip = ({ active, payload }: any) => {
         
         <div className="flex items-center justify-between space-x-4 mb-1">
           <span className="text-slate-300">Current Level:</span>
-          <span className="font-bold text-electric-500">Level {data.current} / {data.fullMark}</span>
+          <span className="font-bold text-electric-500">
+            {data.current === 0 ? 'Unassessed (L0)' : `Level ${data.current} / ${data.fullMark}`}
+          </span>
         </div>
         
         <div className="flex items-center justify-between space-x-4">
@@ -41,7 +43,12 @@ const CustomTooltip = ({ active, payload }: any) => {
           <span className="font-bold text-slate-200">Level {data.required} / {data.fullMark}</span>
         </div>
 
-        {data.current < data.required && (
+        {data.current === 0 && (
+          <div className="mt-2 pt-1 border-t border-slate-700 text-amber-400 font-semibold">
+            Pending Assessment
+          </div>
+        )}
+        {data.current > 0 && data.current < data.required && (
           <div className="mt-2 pt-1 border-t border-slate-700 text-crimsonsoft-500 font-semibold">
             Gap Delta: -{data.required - data.current} Level(s)
           </div>

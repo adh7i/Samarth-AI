@@ -276,7 +276,7 @@ export const StatBotWidget: React.FC = () => {
     {
       id: 'welcome',
       sender: 'bot',
-      text: 'Namaste! I\'m **StatBot**, your MoSPI Statistical Intelligence Assistant.\n\nAsk me about CPI, NSSO sampling, IIP, GVA/GDP, or type **"What courses should I learn?"** to get a personalized FRAC learning roadmap based on your competency gaps! 🎓',
+      text: 'Namaste! I\'m **अध्ययन सारथी**, your MoSPI Statistical Intelligence Assistant.\n\nAsk me about CPI, NSSO sampling, IIP, GVA/GDP, or type **"What courses should I learn?"** to get a personalized FRAC learning roadmap based on your competency gaps! 🎓',
       time: 'Just now'
     }
   ]);
@@ -396,7 +396,7 @@ export const StatBotWidget: React.FC = () => {
           </div>
           <div className="text-left">
             <div className="text-xs font-bold leading-none flex items-center space-x-1.5">
-              <span>StatBot AI</span>
+              <span>अध्ययन सारथी</span>
               <span className="w-1.5 h-1.5 rounded-full bg-emeralddeep-500 animate-ping" />
             </div>
             <div className="text-[10px] text-slate-300 mt-0.5">Ask anything · Course roadmap</div>
@@ -417,7 +417,7 @@ export const StatBotWidget: React.FC = () => {
               </div>
               <div>
                 <h4 className="text-xs font-bold flex items-center space-x-1.5">
-                  <span>StatBot Methodology Assistant</span>
+                  <span>अध्ययन सारथी Methodology Assistant</span>
                   <span className="text-[9px] bg-electric-500/20 text-electric-300 px-1.5 py-0.5 rounded font-mono">RAG · AI</span>
                 </h4>
                 <div className="text-[10px] text-slate-400">Ask anything · Get your learning roadmap</div>
@@ -502,7 +502,8 @@ export const StatBotWidget: React.FC = () => {
                     <span className="w-1.5 h-1.5 bg-electric-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                     <span className="w-1.5 h-1.5 bg-electric-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
-                  <span className="text-[10px] text-slate-500">StatBot is thinking…</span>
+                  <Bot className="w-4 h-4 text-electric-500 mt-0.5" />
+                  <span className="text-[10px] text-slate-500">अध्ययन सारथी is thinking…</span>
                 </div>
               </div>
             )}

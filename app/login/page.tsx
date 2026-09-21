@@ -161,7 +161,12 @@ export default function LoginPage() {
             <Sparkles className="w-7 h-7 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-extrabold text-white tracking-tight">StatSamarth AI</h1>
+            <h1 
+              className="text-4xl sm:text-5xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-400 to-orange-500 drop-shadow-lg pb-1"
+              style={{ fontFamily: '"Yatra One", serif' }}
+            >
+              अध्ययन
+            </h1>
             <p className="text-[#8BA4D5] text-sm font-medium mt-1 max-w-[280px]">
               India's Next-Gen Competency & FRAC Platform
             </p>
