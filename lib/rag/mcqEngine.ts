@@ -57,8 +57,26 @@ export function generateRagQuiz(options: GenerateQuizOptions): Quiz {
   // Map to MCQQuestion structure
   availableQuestions.forEach((q, idx) => {
     const chunk = retrievedChunks[idx % retrievedChunks.length];
+    
+    // Shuffle options to prevent predictable answers
+    const originalCorrectText = q.options.find(opt => opt.key === q.correct_key)?.text;
+    const shuffledOptions = [...q.options];
+    for (let i = shuffledOptions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledOptions[i], shuffledOptions[j]] = [shuffledOptions[j], shuffledOptions[i]];
+    }
+    
+    const keys = ['A', 'B', 'C', 'D'];
+    let newCorrectKey = 'A';
+    const finalOptions = shuffledOptions.map((opt, i) => {
+      if (opt.text === originalCorrectText) newCorrectKey = keys[i];
+      return { key: keys[i], text: opt.text };
+    });
+
     questions.push({
       ...q,
+      options: finalOptions,
+      correct_key: newCorrectKey as 'A' | 'B' | 'C' | 'D',
       id: `gen_q_${Date.now()}_${idx + 1}`,
       competency_id: competencyId,
       blooms_level: bloomsLevel,

@@ -19,6 +19,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({
 
   const handleEnroll = () => {
     setEnrolled(true);
+    window.open('https://igotkarmayogi.gov.in/', '_blank');
   };
 
   return (
